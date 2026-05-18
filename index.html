@@ -703,12 +703,11 @@
   }
 
   function submitEmail(email, successId) {
-    // Option 1: Formspree (free — replace YOUR_FORM_ID)
-    // fetch('https://formspree.io/f/YOUR_FORM_ID', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({ email: email })
-    // });
+    fetch('https://formspree.io/f/xjgzbnlv', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ email: email })
+});
 
     // Option 2: Simple local log (works without any backend)
     console.log('Waitlist signup:', email);
