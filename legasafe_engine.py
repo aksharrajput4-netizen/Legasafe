@@ -338,9 +338,9 @@ def process_pdf(file):
         "health_score": health_score
     }
 # ════════════════════════════════════════════════════════════
-    #  THE FINAL HANDOFF
+    #  THE FINAL HANDOFF (Sends data back to app.py)
     # ════════════════════════════════════════════════════════════
-    # (If your engine doesn't have a health_score variable yet, we will just calculate a quick one here)
+    # Failsafe health score calculation just in case it's missing above
     health_score = 85 if grand_total < 50000 else 60 if grand_total < 100000 else 40
 
     return {
