@@ -14,20 +14,29 @@ if uploaded_file:
         data = process_pdf(uploaded_file)
        
 
-    st.success("Analysis Complete.")
+ # 1. Expand to 4 columns to make room for the Health Score
+        col1, col2, col3, col4 = st.columns(4)
+        col1.metric("Total Spent", f"₹{data['total_spent']:,.0f}")
+        col2.metric("Transactions", data['transaction_count'])
+        col3.metric("Active Subs", len(data['subscriptions_found']))
+        col4.metric("Health Score", f"{data['health_score']}/100")
 
-    col1, col2, col3 = st.columns(3)
-    col1.metric("Total Spent", f"₹{data['total_spent']:,.0f}")
-    col2.metric("Transactions", data['transaction_count'])
-    col3.metric("Active Subs", len(data['subscriptions_found']))
+        # 2. Add the Budget Alert UI below the metrics
+        st.divider()
+        st.subheader("🎯 Budget Tracker")
+        
+        user_budget = st.number_input("Enter your monthly budget target (₹):", min_value=0, value=50000, step=1000)
 
-    st.divider()
-
-    st.subheader("Where did your money go?")
-    if data['category_breakdown']:
-        st.bar_chart(data['category_breakdown'])
-
-    if data['subscriptions_found']:
-        st.subheader("🕵️ Subscription Radar")
-        for sub in data['subscriptions_found']:
-            st.error(f"**{sub['name']}**: ₹{sub['cost']} / month")
+        if data['total_spent'] > user_budget:
+            overage = data['total_spent'] - user_budget
+            st.error(f"⚠️ You are over budget by ₹{overage:,.0f}!")
+        else:
+            savings = user_budget - data['total_spent']
+            st.success(f"✅ You are under budget by ₹{savings:,.0f}. Great job!")
+            
+        # 3. Bring back your Subscription Radar
+        if data['subscriptions_found']:
+            st.divider()
+            st.subheader("📡 Subscription Radar")
+            for sub in data['subscriptions_found']:
+                st.write(f"• **{sub['name']}**: ₹{sub['amount']}")
