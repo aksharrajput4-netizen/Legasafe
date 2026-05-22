@@ -337,3 +337,15 @@ def process_pdf(file):
         "subscriptions_found": found_subs,
         "health_score": health_score
     }
+# ════════════════════════════════════════════════════════════
+    #  THE FINAL HANDOFF
+    # ════════════════════════════════════════════════════════════
+    # (If your engine doesn't have a health_score variable yet, we will just calculate a quick one here)
+    health_score = 85 if grand_total < 50000 else 60 if grand_total < 100000 else 40
+
+    return {
+        "total_spent": grand_total,
+        "transaction_count": len(transactions),
+        "subscriptions_found": found_subs,
+        "health_score": health_score
+    }
