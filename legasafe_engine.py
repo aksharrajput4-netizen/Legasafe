@@ -1,4 +1,3 @@
-%%writefile legasafe_engine.py
 import io
 import re
 from collections import defaultdict
@@ -10,176 +9,179 @@ def process_pdf(file):
     #  DATABASES
     # ════════════════════════════════════════════════════════════
 
-      ANNUAL_KEYWORDS = [
-      "ANNUAL", "YEARLY", "1 YEAR", "ONE YEAR",
-      "12 MONTH", "12MONTH", "365", "1YR",
-      "YEAR PLAN", "ANNUAL PLAN", "YEARLY PLAN", "PER YEAR",
-  ]
+    ANNUAL_KEYWORDS = [
+        "ANNUAL", "YEARLY", "1 YEAR", "ONE YEAR",
+        "12 MONTH", "12MONTH", "365", "1YR",
+        "YEAR PLAN", "ANNUAL PLAN", "YEARLY PLAN", "PER YEAR",
+    ]
 
-  MONTH_MAP = {
-      "01": "Jan", "02": "Feb", "03": "Mar",
-      "04": "Apr", "05": "May", "06": "Jun",
-      "07": "Jul", "08": "Aug", "09": "Sep",
-      "10": "Oct", "11": "Nov", "12": "Dec",
-  }
+    MONTH_MAP = {
+        "01": "Jan", "02": "Feb", "03": "Mar",
+        "04": "Apr", "05": "May", "06": "Jun",
+        "07": "Jul", "08": "Aug", "09": "Sep",
+        "10": "Oct", "11": "Nov", "12": "Dec",
+    }
 
-  SUBS_DB = {
-      "NETFLIX":             {"cat": "Entertainment 🎬", "price": 649},
-      "HOTSTAR":             {"cat": "Entertainment 🎬", "price": 299},
-      "DISNEY":              {"cat": "Entertainment 🎬", "price": 299},
-      "SONYLIV":             {"cat": "Entertainment 🎬", "price": 299},
-      "ZEE5":                {"cat": "Entertainment 🎬", "price": 99},
-      "VOOT":                {"cat": "Entertainment 🎬", "price": 99},
-      "JIOCINEMA":           {"cat": "Entertainment 🎬", "price": 99},
-      "MXPLAYER":            {"cat": "Entertainment 🎬", "price": 99},
-      "ALTBALAJI":           {"cat": "Entertainment 🎬", "price": 100},
-      "TATAPLAY":            {"cat": "Entertainment 🎬", "price": 200},
-      "DISCOVERY":           {"cat": "Entertainment 🎬", "price": 299},
-      "EROSNOW":             {"cat": "Entertainment 🎬", "price": 99},
-      "SPOTIFY":             {"cat": "Music 🎵",         "price": 119},
-      "JIOSAAVN":            {"cat": "Music 🎵",         "price": 99},
-      "GAANA":               {"cat": "Music 🎵",         "price": 99},
-      "WYNK":                {"cat": "Music 🎵",         "price": 99},
-      "APPLE MUSIC":         {"cat": "Music 🎵",         "price": 99},
-      "YOUTUBE MUSIC":       {"cat": "Music 🎵",         "price": 99},
-      "YOUTUBE PREMIUM":     {"cat": "Video/Music 🎵",   "price": 129},
-      "YOUTUBE":             {"cat": "Video/Music 🎵",   "price": 129},
-      "ZOMATO":              {"cat": "Food 🍕",          "price": 199},
-      "SWIGGY":              {"cat": "Food 🍕",          "price": 249},
-      "BLINKIT":             {"cat": "Food 🍕",          "price": 99},
-      "ZEPTO":               {"cat": "Food 🍕",          "price": 99},
-      "BIGBASKET":           {"cat": "Food 🍕",          "price": 99},
-      "CUREFIT":             {"cat": "Health 💪",        "price": 800},
-      "HEALTHIFYME":         {"cat": "Health 💪",        "price": 400},
-      "PRACTO":              {"cat": "Health 💪",        "price": 299},
-      "ICLOUD":              {"cat": "Storage ☁️",       "price": 75},
-      "GOOGLE ONE":          {"cat": "Storage ☁️",       "price": 130},
-      "GOOGLE PLAY":         {"cat": "Apps 📱",          "price": 0},
-      "DROPBOX":             {"cat": "Storage ☁️",       "price": 800},
-      "MICROSOFT":           {"cat": "Productivity 💼",  "price": 420},
-      "OFFICE 365":          {"cat": "Productivity 💼",  "price": 420},
-      "ADOBE":               {"cat": "Design 🎨",        "price": 1675},
-      "CANVA":               {"cat": "Design 🎨",        "price": 400},
-      "NOTION":              {"cat": "Productivity 💼",  "price": 400},
-      "GRAMMARLY":           {"cat": "Productivity 💼",  "price": 900},
-      "LINKEDIN":            {"cat": "Professional 💼",  "price": 1300},
-      "ZOOM":                {"cat": "Communication 💬", "price": 1300},
-      "AUDIBLE":             {"cat": "Books 📚",         "price": 199},
-      "KINDLE":              {"cat": "Books 📚",         "price": 169},
-      "BYJU":                {"cat": "Education 📖",     "price": 2000},
-      "UNACADEMY":           {"cat": "Education 📖",     "price": 1500},
-      "VEDANTU":             {"cat": "Education 📖",     "price": 1000},
-      "COURSERA":            {"cat": "Education 📖",     "price": 2500},
-      "AIRTEL":              {"cat": "Telecom 📱",       "price": 299},
-      "VODAFONE":            {"cat": "Telecom 📱",       "price": 299},
-      "BSNL":                {"cat": "Telecom 📱",       "price": 199},
-      "JIO":                 {"cat": "Telecom 📱",       "price": 239},
-      "TINDER":              {"cat": "Social ❤️",        "price": 400},
-      "BUMBLE":              {"cat": "Social ❤️",        "price": 400},
-      "AMAZON PRIME":        {"cat": "Shopping 🛍️",      "price": 299},
-      "AMAZON":              {"cat": "Shopping 🛍️",      "price": 179},
-      "FLIPKART":            {"cat": "Shopping 🛍️",      "price": 499},
-      "TIMES PRIME":         {"cat": "Bundle ⭐",        "price": 999},
-      "XBOX":                {"cat": "Gaming 🎮",        "price": 499},
-      "PLAYSTATION":         {"cat": "Gaming 🎮",        "price": 499},
-      "PLAYSTATION NETWORK": {"cat": "Gaming 🎮",        "price": 499},
-      "STEAM":               {"cat": "Gaming 🎮",        "price": 350},
-      "EPIC GAMES":          {"cat": "Gaming 🎮",        "price": 0},
-  }
+    SUBS_DB = {
+        "NETFLIX":             {"cat": "Entertainment 🎬", "price": 649},
+        "HOTSTAR":             {"cat": "Entertainment 🎬", "price": 299},
+        "DISNEY":              {"cat": "Entertainment 🎬", "price": 299},
+        "SONYLIV":             {"cat": "Entertainment 🎬", "price": 299},
+        "ZEE5":                {"cat": "Entertainment 🎬", "price": 99},
+        "VOOT":                {"cat": "Entertainment 🎬", "price": 99},
+        "JIOCINEMA":           {"cat": "Entertainment 🎬", "price": 99},
+        "MXPLAYER":            {"cat": "Entertainment 🎬", "price": 99},
+        "ALTBALAJI":           {"cat": "Entertainment 🎬", "price": 100},
+        "TATAPLAY":            {"cat": "Entertainment 🎬", "price": 200},
+        "DISCOVERY":           {"cat": "Entertainment 🎬", "price": 299},
+        "EROSNOW":             {"cat": "Entertainment 🎬", "price": 99},
+        "SPOTIFY":             {"cat": "Music 🎵",         "price": 119},
+        "JIOSAAVN":            {"cat": "Music 🎵",         "price": 99},
+        "GAANA":               {"cat": "Music 🎵",         "price": 99},
+        "WYNK":                {"cat": "Music 🎵",         "price": 99},
+        "APPLE MUSIC":         {"cat": "Music 🎵",         "price": 99},
+        "YOUTUBE MUSIC":       {"cat": "Music 🎵",         "price": 99},
+        "YOUTUBE PREMIUM":     {"cat": "Video/Music 🎵",   "price": 129},
+        "YOUTUBE":             {"cat": "Video/Music 🎵",   "price": 129},
+        "ZOMATO":              {"cat": "Food 🍕",          "price": 199},
+        "SWIGGY":              {"cat": "Food 🍕",          "price": 249},
+        "BLINKIT":             {"cat": "Food 🍕",          "price": 99},
+        "ZEPTO":               {"cat": "Food 🍕",          "price": 99},
+        "BIGBASKET":           {"cat": "Food 🍕",          "price": 99},
+        "CUREFIT":             {"cat": "Health 💪",        "price": 800},
+        "HEALTHIFYME":         {"cat": "Health 💪",        "price": 400},
+        "PRACTO":              {"cat": "Health 💪",        "price": 299},
+        "ICLOUD":              {"cat": "Storage ☁️",       "price": 75},
+        "GOOGLE ONE":          {"cat": "Storage ☁️",       "price": 130},
+        "GOOGLE PLAY":         {"cat": "Apps 📱",          "price": 0},
+        "DROPBOX":             {"cat": "Storage ☁️",       "price": 800},
+        "MICROSOFT":           {"cat": "Productivity 💼",  "price": 420},
+        "OFFICE 365":          {"cat": "Productivity 💼",  "price": 420},
+        "ADOBE":               {"cat": "Design 🎨",        "price": 1675},
+        "CANVA":               {"cat": "Design 🎨",        "price": 400},
+        "NOTION":              {"cat": "Productivity 💼",  "price": 400},
+        "GRAMMARLY":           {"cat": "Productivity 💼",  "price": 900},
+        "LINKEDIN":            {"cat": "Professional 💼",  "price": 1300},
+        "ZOOM":                {"cat": "Communication 💬", "price": 1300},
+        "AUDIBLE":             {"cat": "Books 📚",         "price": 199},
+        "KINDLE":              {"cat": "Books 📚",         "price": 169},
+        "BYJU":                {"cat": "Education 📖",     "price": 2000},
+        "UNACADEMY":           {"cat": "Education 📖",     "price": 1500},
+        "VEDANTU":             {"cat": "Education 📖",     "price": 1000},
+        "COURSERA":            {"cat": "Education 📖",     "price": 2500},
+        "AIRTEL":              {"cat": "Telecom 📱",       "price": 299},
+        "VODAFONE":            {"cat": "Telecom 📱",       "price": 299},
+        "BSNL":                {"cat": "Telecom 📱",       "price": 199},
+        "JIO":                 {"cat": "Telecom 📱",       "price": 239},
+        "TINDER":              {"cat": "Social ❤️",        "price": 400},
+        "BUMBLE":              {"cat": "Social ❤️",        "price": 400},
+        "AMAZON PRIME":        {"cat": "Shopping 🛍️",      "price": 299},
+        "AMAZON":              {"cat": "Shopping 🛍️",      "price": 179},
+        "FLIPKART":            {"cat": "Shopping 🛍️",      "price": 499},
+        "TIMES PRIME":         {"cat": "Bundle ⭐",        "price": 999},
+        "XBOX":                {"cat": "Gaming 🎮",        "price": 499},
+        "PLAYSTATION":         {"cat": "Gaming 🎮",        "price": 499},
+        "PLAYSTATION NETWORK": {"cat": "Gaming 🎮",        "price": 499},
+        "STEAM":               {"cat": "Gaming 🎮",        "price": 350},
+        "EPIC GAMES":          {"cat": "Gaming 🎮",        "price": 0},
+    }
+
     INDIAN_KEYWORDS = {
-      "🍕 Food & Dining": [
-          "TIKI", "TIKKI", "CHAAT", "PANI PURI", "PANIPURI",
-          "BHELPURI", "VADA PAV", "SAMOSA", "DHABA", "BIRYANI",
-          "HALWAI", "MITHAI", "SWEETS", "BAKERY", "CAFE",
-          "CANTEEN", "RESTAURANT", "FOOD", "JUICE", "LASSI",
-          "CHAI", "TEA", "COFFEE", "SNACKS", "TIFFIN", "MESS",
-          "PIZZA", "BURGER", "NOODLES", "ROLL", "KIRANA",
-          "GROCERY", "VEGETABLES", "SABZI", "FRUITS", "MART",
-          "ZOMATO", "SWIGGY", "BLINKIT", "ZEPTO", "BIGBASKET",
-          "MCDONALDS", "STARBUCKS", "KFC", "DOMINOS", "SUBWAY",
-          "TAPRI", "EVENING SNACKS",
-      ],
-      "🚗 Transport": [
-          "UBER", "OLA", "RAPIDO", "AUTO", "CAB", "TAXI",
-          "PETROL", "DIESEL", "FUEL", "PUMP", "BPCL", "IOCL",
-          "INDIAN OIL", "CNG", "IRCTC", "RAILWAY", "TRAIN",
-          "BUS", "METRO", "METRO CARD", "FASTAG", "TOLL",
-          "PARKING", "REDBUS", "IXIGO",
-      ],
-      "🛍️ Shopping": [
-          "AMAZON", "FLIPKART", "MYNTRA", "AJIO", "MEESHO",
-          "NYKAA", "MALL", "CLOTH", "GARMENTS", "FASHION",
-          "FOOTWEAR", "SHOES", "ELECTRONICS", "MOBILE",
-          "LAPTOP", "GIFT", "STATIONERY",
-      ],
-      "💊 Health & Medical": [
-          "PHARMACY", "MEDICAL", "MEDICALS", "MEDICINE",
-          "HOSPITAL", "CLINIC", "DOCTOR", "APOLLO", "MEDPLUS",
-          "NETMEDS", "PHARMEASY", "1MG", "CHEMIST",
-          "DIAGNOSTIC", "LAB", "PATHOLOGY", "DENTAL",
-          "HEALTHCARE", "DR.", "MAX HEALTHCARE",
-          "DR LAL", "PATHLABS",
-      ],
-      "📚 Education": [
-          "BYJU", "UNACADEMY", "VEDANTU", "SCHOOL", "COLLEGE",
-          "FEES", "TUITION", "COACHING", "CLASSES", "ACADEMY",
-          "INSTITUTE", "COURSE", "BOOKS", "LIBRARY", "EXAM",
-      ],
-      "💸 EMI & Loans": [
-          "EMI", "LOAN", "FINANCE", "LENDING", "CREDIT",
-          "BAJAJ", "REPAYMENT", "INTEREST", "INSTALMENT",
-      ],
-      "🏠 Bills & Utilities": [
-          "ELECTRICITY", "BIJLI", "POWER", "WATER", "GAS",
-          "LPG", "INDANE", "WIFI", "BROADBAND", "FIBER",
-          "AIRTEL", "BSNL", "JIO", "VODAFONE", "DTH",
-          "RECHARGE", "POSTPAID", "MAINTENANCE", "RENT",
-          "SOCIETY", "METRO CARD",
-      ],
-      "💰 Investments": [
-          "MUTUAL FUND", "SIP", "ZERODHA", "GROWW", "UPSTOX",
-          "ANGEL", "SHARES", "STOCK", "GOLD", "FD", "RD",
-          "LIC", "INSURANCE", "PPF", "NPS",
-      ],
-      "🎮 Gaming & Entertainment": [
-          "NETFLIX", "HOTSTAR", "SPOTIFY", "YOUTUBE",
-          "BOOKMYSHOW", "PVR", "INOX", "CINEMA", "MOVIE",
-          "PLAYSTATION", "XBOX", "STEAM", "EPIC GAMES",
-          "GAMING", "GAME STORE", "PLAYSTATION NETWORK",
-      ],
-      "✈️ Travel & Hotels": [
-          "OYO", "AIRBNB", "TREEBO", "FLIGHT", "INDIGO",
-          "AIRINDIA", "SPICEJET", "HOLIDAY", "TOUR", "RESORT",
-          "GOIBIBO", "MAKEMYTRIP", "HOTEL ADVANCE",
-      ],
-      "💈 Personal Care": [
-          "SALON", "SALOON", "BARBER", "PARLOUR", "SPA",
-          "MASSAGE", "BEAUTY", "GROOMING", "HAIR", "NAILS",
-      ],
-  }
-   UNNECESSARY = [
-      "🍕 Food & Dining", "🛍️ Shopping",
-      "🎮 Gaming & Entertainment", "✈️ Travel & Hotels",
-      "💈 Personal Care",
-   ]
-  NECESSARY = [
-      "💊 Health & Medical", "📚 Education",
-      "💸 EMI & Loans", "🏠 Bills & Utilities", "💰 Investments",
-  ]
+        "🍕 Food & Dining": [
+            "TIKI", "TIKKI", "CHAAT", "PANI PURI", "PANIPURI",
+            "BHELPURI", "VADA PAV", "SAMOSA", "DHABA", "BIRYANI",
+            "HALWAI", "MITHAI", "SWEETS", "BAKERY", "CAFE",
+            "CANTEEN", "RESTAURANT", "FOOD", "JUICE", "LASSI",
+            "CHAI", "TEA", "COFFEE", "SNACKS", "TIFFIN", "MESS",
+            "PIZZA", "BURGER", "NOODLES", "ROLL", "KIRANA",
+            "GROCERY", "VEGETABLES", "SABZI", "FRUITS", "MART",
+            "ZOMATO", "SWIGGY", "BLINKIT", "ZEPTO", "BIGBASKET",
+            "MCDONALDS", "STARBUCKS", "KFC", "DOMINOS", "SUBWAY",
+            "TAPRI", "EVENING SNACKS",
+        ],
+        "🚗 Transport": [
+            "UBER", "OLA", "RAPIDO", "AUTO", "CAB", "TAXI",
+            "PETROL", "DIESEL", "FUEL", "PUMP", "BPCL", "IOCL",
+            "INDIAN OIL", "CNG", "IRCTC", "RAILWAY", "TRAIN",
+            "BUS", "METRO", "METRO CARD", "FASTAG", "TOLL",
+            "PARKING", "REDBUS", "IXIGO",
+        ],
+        "🛍️ Shopping": [
+            "AMAZON", "FLIPKART", "MYNTRA", "AJIO", "MEESHO",
+            "NYKAA", "MALL", "CLOTH", "GARMENTS", "FASHION",
+            "FOOTWEAR", "SHOES", "ELECTRONICS", "MOBILE",
+            "LAPTOP", "GIFT", "STATIONERY",
+        ],
+        "💊 Health & Medical": [
+            "PHARMACY", "MEDICAL", "MEDICALS", "MEDICINE",
+            "HOSPITAL", "CLINIC", "DOCTOR", "APOLLO", "MEDPLUS",
+            "NETMEDS", "PHARMEASY", "1MG", "CHEMIST",
+            "DIAGNOSTIC", "LAB", "PATHOLOGY", "DENTAL",
+            "HEALTHCARE", "DR.", "MAX HEALTHCARE",
+            "DR LAL", "PATHLABS",
+        ],
+        "📚 Education": [
+            "BYJU", "UNACADEMY", "VEDANTU", "SCHOOL", "COLLEGE",
+            "FEES", "TUITION", "COACHING", "CLASSES", "ACADEMY",
+            "INSTITUTE", "COURSE", "BOOKS", "LIBRARY", "EXAM",
+        ],
+        "💸 EMI & Loans": [
+            "EMI", "LOAN", "FINANCE", "LENDING", "CREDIT",
+            "BAJAJ", "REPAYMENT", "INTEREST", "INSTALMENT",
+        ],
+        "🏠 Bills & Utilities": [
+            "ELECTRICITY", "BIJLI", "POWER", "WATER", "GAS",
+            "LPG", "INDANE", "WIFI", "BROADBAND", "FIBER",
+            "AIRTEL", "BSNL", "JIO", "VODAFONE", "DTH",
+            "RECHARGE", "POSTPAID", "MAINTENANCE", "RENT",
+            "SOCIETY", "METRO CARD",
+        ],
+        "💰 Investments": [
+            "MUTUAL FUND", "SIP", "ZERODHA", "GROWW", "UPSTOX",
+            "ANGEL", "SHARES", "STOCK", "GOLD", "FD", "RD",
+            "LIC", "INSURANCE", "PPF", "NPS",
+        ],
+        "🎮 Gaming & Entertainment": [
+            "NETFLIX", "HOTSTAR", "SPOTIFY", "YOUTUBE",
+            "BOOKMYSHOW", "PVR", "INOX", "CINEMA", "MOVIE",
+            "PLAYSTATION", "XBOX", "STEAM", "EPIC GAMES",
+            "GAMING", "GAME STORE", "PLAYSTATION NETWORK",
+        ],
+        "✈️ Travel & Hotels": [
+            "OYO", "AIRBNB", "TREEBO", "FLIGHT", "INDIGO",
+            "AIRINDIA", "SPICEJET", "HOLIDAY", "TOUR", "RESORT",
+            "GOIBIBO", "MAKEMYTRIP", "HOTEL ADVANCE",
+        ],
+        "💈 Personal Care": [
+            "SALON", "SALOON", "BARBER", "PARLOUR", "SPA",
+            "MASSAGE", "BEAUTY", "GROOMING", "HAIR", "NAILS",
+        ],
+    }
 
-   DEFAULT_BUDGETS = {
-      "🍕 Food & Dining":          2000,
-      "🚗 Transport":              1000,
-      "🛍️ Shopping":               1500,
-      "💊 Health & Medical":       1500,
-      "📚 Education":              2000,
-      "💸 EMI & Loans":            5000,
-      "🏠 Bills & Utilities":      2000,
-      "💰 Investments":            3000,
-      "🎮 Gaming & Entertainment": 1000,
-      "✈️ Travel & Hotels":        2000,
-      "💈 Personal Care":           500,
-  }
+    UNNECESSARY = [
+        "🍕 Food & Dining", "🛍️ Shopping",
+        "🎮 Gaming & Entertainment", "✈️ Travel & Hotels",
+        "💈 Personal Care",
+    ]
+
+    NECESSARY = [
+        "💊 Health & Medical", "📚 Education",
+        "💸 EMI & Loans", "🏠 Bills & Utilities", "💰 Investments",
+    ]
+
+    DEFAULT_BUDGETS = {
+        "🍕 Food & Dining":          2000,
+        "🚗 Transport":              1000,
+        "🛍️ Shopping":               1500,
+        "💊 Health & Medical":       1500,
+        "📚 Education":              2000,
+        "💸 EMI & Loans":            5000,
+        "🏠 Bills & Utilities":      2000,
+        "💰 Investments":            3000,
+        "🎮 Gaming & Entertainment": 1000,
+        "✈️ Travel & Hotels":        2000,
+        "💈 Personal Care":           500,
+    }
 
     # ════════════════════════════════════════════════════════════
     #  HELPER FUNCTIONS
@@ -329,20 +331,8 @@ def process_pdf(file):
     health_score = 85 if grand_total < 50000 else 60 if grand_total < 100000 else 40
 
     # ════════════════════════════════════════════════════════════
-    #  THE FINAL HANDOFF (Sends data back to Streamlit)
-    # ════════════════════════════════════════════════════════════
-    return {
-        "total_spent": grand_total,
-        "transaction_count": len(transactions),
-        "subscriptions_found": found_subs,
-        "health_score": health_score
-    }
-# ════════════════════════════════════════════════════════════
     #  THE FINAL HANDOFF (Sends data back to app.py)
     # ════════════════════════════════════════════════════════════
-    # Failsafe health score calculation just in case it's missing above
-    health_score = 85 if grand_total < 50000 else 60 if grand_total < 100000 else 40
-
     return {
         "total_spent": grand_total,
         "transaction_count": len(transactions),
