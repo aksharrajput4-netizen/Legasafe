@@ -10,10 +10,8 @@ from collections import defaultdict
 from datetime import datetime
 
 import pdfplumber
-from google.colab import files
 
 import csv
-from google.colab import files
 import pandas as pd
 
 def run_legasafe():
