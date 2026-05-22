@@ -12,7 +12,7 @@ uploaded_file = st.file_uploader("Drop your Bank Statement (PDF) here", type="pd
 if uploaded_file:
     with st.spinner('Analyzing your digital footprint...'):
         data = process_pdf(uploaded_file)
-        st.write(data)
+       
 
     st.success("Analysis Complete.")
 
