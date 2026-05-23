@@ -22,6 +22,7 @@ def process_pdf(file):
         "10": "Oct", "11": "Nov", "12": "Dec",
     }
 
+    # Cleaned Subscription Database (One-off games and apps evicted)
     SUBS_DB = {
         "NETFLIX":             {"cat": "Entertainment 🎬", "price": 649},
         "HOTSTAR":             {"cat": "Entertainment 🎬", "price": 299},
@@ -53,7 +54,6 @@ def process_pdf(file):
         "PRACTO":              {"cat": "Health 💪",        "price": 299},
         "ICLOUD":              {"cat": "Storage ☁️",       "price": 75},
         "GOOGLE ONE":          {"cat": "Storage ☁️",       "price": 130},
-        "GOOGLE PLAY":         {"cat": "Apps 📱",          "price": 0},
         "DROPBOX":             {"cat": "Storage ☁️",       "price": 800},
         "MICROSOFT":           {"cat": "Productivity 💼",  "price": 420},
         "OFFICE 365":          {"cat": "Productivity 💼",  "price": 420},
@@ -79,11 +79,6 @@ def process_pdf(file):
         "AMAZON":              {"cat": "Shopping 🛍️",      "price": 179},
         "FLIPKART":            {"cat": "Shopping 🛍️",      "price": 499},
         "TIMES PRIME":         {"cat": "Bundle ⭐",        "price": 999},
-        "XBOX":                {"cat": "Gaming 🎮",        "price": 499},
-        "PLAYSTATION":         {"cat": "Gaming 🎮",        "price": 499},
-        "PLAYSTATION NETWORK": {"cat": "Gaming 🎮",        "price": 499},
-        "STEAM":               {"cat": "Gaming 🎮",        "price": 350},
-        "EPIC GAMES":          {"cat": "Gaming 🎮",        "price": 0},
     }
 
     INDIAN_KEYWORDS = {
@@ -144,8 +139,8 @@ def process_pdf(file):
         "🎮 Gaming & Entertainment": [
             "NETFLIX", "HOTSTAR", "SPOTIFY", "YOUTUBE",
             "BOOKMYSHOW", "PVR", "INOX", "CINEMA", "MOVIE",
-            "PLAYSTATION", "XBOX", "STEAM", "EPIC GAMES",
-            "GAMING", "GAME STORE", "PLAYSTATION NETWORK",
+            "PLAYSTATION", "XBOX", "STEAM", "EPIC GAMES", "GOOGLE PLAY",
+            "GAMING", "GAME STORE", "PLAYSTATION NETWORK", "RIOT GAMES", "VALORANT",
         ],
         "✈️ Travel & Hotels": [
             "OYO", "AIRBNB", "TREEBO", "FLIGHT", "INDIGO",
@@ -273,7 +268,7 @@ def process_pdf(file):
                                     desc_idx = i
                                 if any(x in cell_up for x in ["DEBIT", "WITHDRAWAL", "AMOUNT"]):
                                     debit_idx = i
-                            continue
+                            continue 
 
                         month_from_row = extract_month(cells[0])
                         if month_from_row:
