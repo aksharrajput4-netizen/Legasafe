@@ -326,10 +326,12 @@ def process_pdf(file):
             continue
         seen.add(key)
         
-        base_price = info["price"]
+        # Grab the real PDF amount if we found it, otherwise use the database default
+        actual_price = matched_txn["debit"] if matched_txn else info["price"]
+        
         found_subs.append({
             "name":          keyword.title(),
-            "amount":        base_price,
+            "amount":        actual_price,
         })
 
     categorised   = defaultdict(list)
