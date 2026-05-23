@@ -329,8 +329,21 @@ def process_pdf(file):
         # Grab the real PDF amount if we found it, otherwise use the database default
         actual_price = matched_txn["debit"] if matched_txn else info["price"]
         
+        display_name = keyword.title()
+        
+        # The Tiered Universal Math Check
+        if info["price"] > 0:
+            ratio = actual_price / info["price"]
+            
+            if ratio >= 9:
+                display_name += " (Annual)"
+            elif ratio >= 5:
+                display_name += " (6-Month)"
+            elif ratio >= 2.5:
+                display_name += " (Quarterly)"
+                
         found_subs.append({
-            "name":          keyword.title(),
+            "name":          display_name,
             "amount":        actual_price,
         })
 
