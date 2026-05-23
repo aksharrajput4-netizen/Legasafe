@@ -203,7 +203,18 @@ def process_pdf(file):
     def extract_month(text):
         if not text:
             return None
+        m = re.search(
+            r"\b(\d{1,2})\s+"
+            r"(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)"
+            r"\s+(\d{4})\b",
+            text, re.IGNORECASE
+        )
+        if m:
+            return m.group(2).capitalize()
         m = re.search(r"\b(\d{2})[/-](\d{2})[/-](\d{4})\b", text)
+        if m:
+            return MONTH_MAP.get(m.group(2))
+        m = re.search(r"\b(\d{4})[/-](\d{2})[/-](\d{2})\b", text)
         if m:
             return MONTH_MAP.get(m.group(2))
         return None
@@ -254,14 +265,15 @@ def process_pdf(file):
                         cells  = [str(c).strip() if c else "" for c in row]
                         joined = " ".join(cells).upper()
 
-                        if any(h in joined for h in ["DATE", "DESCRIPTION", "DEBIT"]) and len(joined) < 200:
+                        # --- 1. Find the Headers dynamically ---
+                        if any(h in joined for h in ["DATE", "DESCRIPTION", "NARRATION", "DEBIT", "WITHDRAWAL", "PARTICULARS"]) and len(joined) < 200:
                             for i, cell in enumerate(cells):
                                 cell_up = cell.upper()
-                                if any(x in cell_up for x in ["DESC", "PARTICULARS"]):
+                                if any(x in cell_up for x in ["DESC", "NARRATION", "PARTICULARS"]):
                                     desc_idx = i
-                                if any(x in cell_up for x in ["DEBIT", "AMOUNT"]):
+                                if any(x in cell_up for x in ["DEBIT", "WITHDRAWAL", "AMOUNT"]):
                                     debit_idx = i
-                            continue 
+                            continue
 
                         month_from_row = extract_month(cells[0])
                         if month_from_row:
