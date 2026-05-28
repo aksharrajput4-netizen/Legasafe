@@ -3,9 +3,9 @@
 
 Free Indian bank statement analyser — detects forgotten subscriptions, categorises UPI spending, and shows your financial health score. **Your data never leaves your device.**
 
-🔗 **[Try the live app →](https://legasafe.streamlit.app)**
+🔗 **[Try the live app ](https://legasafe.streamlit.app)**
 
-🌐 **[Landing page →](https://aksharrajput4-netizen.github.io/Legasafe)**
+🌐 **[Landing page ](https://aksharrajput4-netizen.github.io/Legasafe)**
 
 ---
 
