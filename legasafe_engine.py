@@ -88,6 +88,16 @@ def process_pdf(file, password=None):
         "STEAM":               {"cat": "Gaming",        "price": 350},
         # Fixed: Epic Games has variable amounts so price=1
         "EPIC GAMES":          {"cat": "Gaming",        "price": 1},
+        "PHYSICSWALLAH":   {"cat": "Education", "price": 999},
+        "PW APP":          {"cat": "Education", "price": 999},
+        "KUKU FM":         {"cat": "Entertainment", "price": 199},
+        "POCKET FM":       {"cat": "Entertainment", "price": 199},
+        "HOICHOI":         {"cat": "Entertainment", "price": 299},
+        "SUN NXT":         {"cat": "Entertainment", "price": 99},
+        "HUNGAMA":         {"cat": "Entertainment", "price": 99},
+        "LIONSGATE":       {"cat": "Entertainment", "price": 99},
+        "MANORAMA MAX":    {"cat": "Entertainment", "price": 99},
+        "STAGE OTT":       {"cat": "Entertainment", "price": 99}
     }
 
     # ════════════════════════════════════════════════════════════
