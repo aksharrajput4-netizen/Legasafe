@@ -37,6 +37,6 @@ Free Indian bank statement analyser — detects forgotten subscriptions, categor
 ---
 
 ## Built by
-Akshar Rajput — 17 year old solo founder from India
+Akshar — 17 year old solo founder from India
 Twitter: [@legasafein](https://twitter.com/legasafein)
 Email: getlegasafe@gmail.com
