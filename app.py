@@ -8,12 +8,12 @@ st.set_page_config(page_title="Legasafe", page_icon="🛡️", layout="centered"
 # --- Custom CSS ---
 st.markdown("""
 <style>
-    .main { background-color: #0f1117; }
-    .stApp { background-color: #0f1117; }
-    h1 { color: #ffffff; font-family: 'Georgia', serif; }
+    .main { background-color: #0f0f0f; }
+    .stApp { background-color: #0f0f0f; }
+    h1 { color: #C9A84C; font-family: 'Georgia', serif; }
     .metric-card {
-        background: #1a1d27;
-        border: 1px solid #2d3147;
+        background: #1a1a1a;
+        border: 1px solid #C9A84C;
         border-radius: 12px;
         padding: 16px;
         text-align: center;
@@ -25,8 +25,8 @@ st.markdown("""
         margin-top: 1.5rem;
     }
     .sub-row {
-        background: #1a1d27;
-        border-left: 3px solid #3b82f6;
+        background: #1a1a1a;
+        border-left: 3px solid #C9A84C;
         padding: 8px 14px;
         border-radius: 0 8px 8px 0;
         margin: 6px 0;
@@ -37,17 +37,27 @@ st.markdown("""
     .health-bad  { color: #ef4444; font-size: 2rem; font-weight: 800; }
     .badge {
         display: inline-block;
-        background: #3b82f6;
-        color: white;
+        background: #C9A84C;
+        color: #000000;
         border-radius: 999px;
         padding: 2px 10px;
         font-size: 0.75rem;
         font-weight: 600;
         margin-left: 6px;
     }
+    [data-testid="stFileUploader"] {
+        background-color: #1a1a1a;
+        border: 1px solid #C9A84C;
+        border-radius: 8px;
+    }
+    [data-testid="stFileUploaderDropzone"] {
+        background-color: #1a1a1a !important;
+    }
+    [data-testid="stFileUploader"] * {
+        color: #ffffff !important;
+    }
 </style>
 """, unsafe_allow_html=True)
-
 # --- Header ---
 st.markdown("# 🛡️ Legasafe")
 st.markdown("**Find every rupee. Know every subscription. Zero data uploaded.**")
