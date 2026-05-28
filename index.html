@@ -1,731 +1,564 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Legasafe — Know Where Your Money Goes</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Legasafe — Know Where Your Money Goes</title>
+  <meta name="description" content="Legasafe scans your Indian bank statement PDF and instantly shows forgotten subscriptions, UPI spending, and your financial health score. Free. No login. No data uploaded." />
+  <meta name="google-site-verification" content="Apib7-x98H0j5cPqHWwSMm6dNU4GmODRoqxLiDzdx9I" />
 
-  :root {
-    --gold:   #f0a500;
-    --teal:   #00c9a7;
-    --dark:   #080c14;
-    --card:   #0f1623;
-    --border: rgba(255,255,255,0.08);
-    --text:   #e2e8f0;
-    --muted:  #64748b;
-  }
+  <!-- Open Graph -->
+  <meta property="og:title" content="Legasafe — Find Every Subscription Draining Your Bank Account" />
+  <meta property="og:description" content="Free Indian bank statement scanner. Finds forgotten subscriptions, categorises UPI, shows spending trends. Your data never leaves your device." />
+  <meta property="og:url" content="https://aksharrajput4-netizen.github.io/Legasafe" />
+  <meta property="og:type" content="website" />
 
-  html { scroll-behavior: smooth; }
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  body {
-    font-family: 'Inter', sans-serif;
-    background: var(--dark);
-    color: var(--text);
-    line-height: 1.6;
-  }
+    :root {
+      --bg: #0c0f1a;
+      --surface: #131729;
+      --border: #1e2440;
+      --accent: #3b6ef6;
+      --accent-hover: #2d5ce0;
+      --accent-soft: rgba(59,110,246,0.12);
+      --text: #e8eaf6;
+      --text-muted: #8892b0;
+      --green: #22c55e;
+      --amber: #f59e0b;
+    }
 
-  /* ── NAV ── */
-  nav {
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    z-index: 100;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 18px 5%;
-    background: rgba(8,12,20,0.85);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--border);
-  }
+    html { scroll-behavior: smooth; }
 
-  .logo {
-    font-size: 1.4rem;
-    font-weight: 800;
-    color: var(--gold);
-    letter-spacing: -0.5px;
-  }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+    }
 
-  .logo span { color: var(--text); }
+    /* ── Nav ── */
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 18px 5%;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: rgba(12,15,26,0.92);
+      backdrop-filter: blur(12px);
+      z-index: 100;
+    }
+    .logo { font-weight: 800; font-size: 1.2rem; letter-spacing: -0.5px; }
+    .logo span { color: var(--accent); }
+    .nav-cta {
+      background: var(--accent);
+      color: #fff;
+      padding: 9px 20px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: background 0.2s;
+    }
+    .nav-cta:hover { background: var(--accent-hover); }
 
-  .nav-cta {
-    background: var(--teal);
-    color: #000;
-    font-weight: 700;
-    font-size: 0.85rem;
-    padding: 10px 22px;
-    border-radius: 8px;
-    text-decoration: none;
-    transition: opacity 0.2s;
-  }
-  .nav-cta:hover { opacity: 0.85; }
+    /* ── Hero ── */
+    .hero {
+      text-align: center;
+      padding: 80px 5% 60px;
+      max-width: 780px;
+      margin: 0 auto;
+    }
+    .badge-row {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .badge {
+      background: var(--accent-soft);
+      border: 1px solid rgba(59,110,246,0.3);
+      color: #93b4ff;
+      border-radius: 999px;
+      padding: 5px 14px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -1px;
+      margin-bottom: 20px;
+    }
+    .hero h1 em { color: var(--accent); font-style: normal; }
+    .hero p {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      max-width: 560px;
+      margin: 0 auto 32px;
+    }
 
-  /* ── HERO ── */
-  .hero {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 120px 5% 80px;
-    background:
-      radial-gradient(ellipse 80% 50% at 50% -10%,
-        rgba(0,201,167,0.12) 0%, transparent 70%),
-      radial-gradient(ellipse 60% 40% at 80% 80%,
-        rgba(240,165,0,0.08) 0%, transparent 60%);
-  }
+    /* ── CTA Buttons ── */
+    .cta-group {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+      padding: 15px 32px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 1.05rem;
+      text-decoration: none;
+      transition: background 0.2s, transform 0.15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); }
+    .btn-secondary {
+      background: transparent;
+      color: var(--text-muted);
+      padding: 15px 28px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 1rem;
+      text-decoration: none;
+      border: 1px solid var(--border);
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .btn-secondary:hover { border-color: var(--accent); color: var(--text); }
 
-  .badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: rgba(0,201,167,0.1);
-    border: 1px solid rgba(0,201,167,0.3);
-    color: var(--teal);
-    font-size: 0.78rem;
-    font-weight: 600;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    padding: 6px 16px;
-    border-radius: 99px;
-    margin-bottom: 28px;
-  }
+    .live-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(34,197,94,0.1);
+      border: 1px solid rgba(34,197,94,0.3);
+      color: var(--green);
+      border-radius: 999px;
+      padding: 5px 14px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      margin-bottom: 32px;
+    }
+    .live-dot {
+      width: 7px; height: 7px;
+      background: var(--green);
+      border-radius: 50%;
+      animation: pulse 1.8s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
 
-  .hero h1 {
-    font-size: clamp(2.2rem, 6vw, 4rem);
-    font-weight: 800;
-    line-height: 1.15;
-    letter-spacing: -1.5px;
-    margin-bottom: 20px;
-    max-width: 800px;
-  }
+    /* ── Trust Pills ── */
+    .trust-row {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+    .trust-item { color: var(--text-muted); font-size: 0.85rem; }
+    .trust-item span { color: var(--green); margin-right: 4px; }
 
-  .hero h1 .highlight { color: var(--gold); }
+    /* ── Stats ── */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      margin: 60px 0;
+    }
+    .stat {
+      background: var(--bg);
+      padding: 32px 20px;
+      text-align: center;
+    }
+    .stat-num { font-size: 2rem; font-weight: 800; color: var(--accent); }
+    .stat-label { font-size: 0.82rem; color: var(--text-muted); margin-top: 4px; }
 
-  .hero p {
-    font-size: clamp(1rem, 2.5vw, 1.2rem);
-    color: var(--muted);
-    max-width: 580px;
-    margin-bottom: 40px;
-  }
+    /* ── Sections ── */
+    section { padding: 60px 5%; max-width: 860px; margin: 0 auto; }
+    .section-title {
+      text-align: center;
+      font-size: clamp(1.5rem, 3vw, 2.2rem);
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin-bottom: 10px;
+    }
+    .section-sub {
+      text-align: center;
+      color: var(--text-muted);
+      margin-bottom: 40px;
+      font-size: 1rem;
+    }
 
-  /* ── EMAIL FORM ── */
-  .form-wrap {
-    display: flex;
-    gap: 12px;
-    width: 100%;
-    max-width: 520px;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
+    /* ── Problem cards ── */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px;
+      transition: border-color 0.2s;
+    }
+    .card:hover { border-color: var(--accent); }
+    .card-icon { font-size: 1.8rem; margin-bottom: 12px; }
+    .card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 8px; }
+    .card p { font-size: 0.9rem; color: var(--text-muted); }
 
-  .form-wrap input {
-    flex: 1;
-    min-width: 220px;
-    padding: 14px 20px;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    color: var(--text);
-    font-size: 1rem;
-    font-family: inherit;
-    outline: none;
-    transition: border-color 0.2s;
-  }
+    /* ── Steps ── */
+    .steps { display: flex; flex-direction: column; gap: 24px; }
+    .step { display: flex; gap: 20px; align-items: flex-start; }
+    .step-num {
+      min-width: 40px; height: 40px;
+      background: var(--accent);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 1rem;
+      flex-shrink: 0;
+    }
+    .step-body h3 { font-size: 1rem; font-weight: 700; margin-bottom: 4px; }
+    .step-body p { font-size: 0.9rem; color: var(--text-muted); }
 
-  .form-wrap input:focus {
-    border-color: var(--teal);
-  }
+    /* ── Privacy Box ── */
+    .privacy-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 40px;
+      text-align: center;
+      margin: 60px auto;
+      max-width: 680px;
+    }
+    .privacy-box h2 { font-size: 1.6rem; font-weight: 800; margin-bottom: 12px; }
+    .privacy-box p { color: var(--text-muted); margin-bottom: 28px; }
+    .privacy-pills {
+      display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+    }
+    .privacy-pill {
+      background: rgba(34,197,94,0.1);
+      border: 1px solid rgba(34,197,94,0.25);
+      color: #86efac;
+      border-radius: 999px;
+      padding: 6px 16px;
+      font-size: 0.82rem;
+      font-weight: 600;
+    }
 
-  .form-wrap input::placeholder { color: var(--muted); }
+    /* ── FAQ ── */
+    .faq { max-width: 700px; margin: 0 auto; }
+    .faq-item {
+      border-bottom: 1px solid var(--border);
+      padding: 20px 0;
+    }
+    .faq-item:last-child { border-bottom: none; }
+    .faq-item h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+    .faq-item p { font-size: 0.9rem; color: var(--text-muted); }
 
-  .btn-primary {
-    padding: 14px 28px;
-    background: var(--teal);
-    color: #000;
-    font-weight: 700;
-    font-size: 0.95rem;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    font-family: inherit;
-    transition: opacity 0.2s, transform 0.1s;
-    white-space: nowrap;
-  }
+    /* ── Waitlist ── */
+    .waitlist-section {
+      text-align: center;
+      padding: 60px 5%;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+    }
+    .waitlist-section h2 { font-size: 1.8rem; font-weight: 800; margin-bottom: 10px; }
+    .waitlist-section p { color: var(--text-muted); margin-bottom: 28px; }
+    .waitlist-form {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+    .waitlist-form input {
+      flex: 1;
+      min-width: 220px;
+      padding: 13px 18px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 0.95rem;
+      outline: none;
+    }
+    .waitlist-form input:focus { border-color: var(--accent); }
+    .waitlist-form button {
+      background: var(--accent);
+      color: #fff;
+      padding: 13px 24px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .waitlist-form button:hover { background: var(--accent-hover); }
+    #success-msg {
+      display: none;
+      color: var(--green);
+      font-weight: 600;
+      margin-top: 14px;
+    }
 
-  .btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
-  .btn-primary:active { transform: translateY(0); }
-
-  .trust-row {
-    display: flex;
-    gap: 24px;
-    margin-top: 20px;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-
-  .trust-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    color: var(--muted);
-    font-size: 0.82rem;
-  }
-
-  /* ── STATS ── */
-  .stats {
-    display: flex;
-    justify-content: center;
-    gap: 40px;
-    flex-wrap: wrap;
-    padding: 60px 5%;
-    border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-  }
-
-  .stat { text-align: center; }
-
-  .stat-number {
-    font-size: 2.2rem;
-    font-weight: 800;
-    color: var(--gold);
-    letter-spacing: -1px;
-  }
-
-  .stat-label {
-    font-size: 0.85rem;
-    color: var(--muted);
-    margin-top: 4px;
-  }
-
-  /* ── PROBLEMS ── */
-  .section {
-    padding: 80px 5%;
-    max-width: 1100px;
-    margin: 0 auto;
-  }
-
-  .section-label {
-    font-size: 0.78rem;
-    font-weight: 600;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--teal);
-    margin-bottom: 12px;
-  }
-
-  .section-title {
-    font-size: clamp(1.8rem, 4vw, 2.8rem);
-    font-weight: 800;
-    letter-spacing: -1px;
-    margin-bottom: 16px;
-  }
-
-  .section-sub {
-    color: var(--muted);
-    font-size: 1.05rem;
-    max-width: 560px;
-    margin-bottom: 48px;
-  }
-
-  .problems-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 20px;
-  }
-
-  .problem-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 28px 24px;
-    transition: border-color 0.2s, transform 0.2s;
-  }
-
-  .problem-card:hover {
-    border-color: rgba(0,201,167,0.3);
-    transform: translateY(-3px);
-  }
-
-  .problem-icon {
-    font-size: 2rem;
-    margin-bottom: 14px;
-  }
-
-  .problem-card h3 {
-    font-size: 1.05rem;
-    font-weight: 700;
-    margin-bottom: 8px;
-  }
-
-  .problem-card p {
-    color: var(--muted);
-    font-size: 0.9rem;
-    line-height: 1.6;
-  }
-
-  /* ── HOW IT WORKS ── */
-  .how-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 24px;
-  }
-
-  .how-card {
-    text-align: center;
-    padding: 36px 24px;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    position: relative;
-  }
-
-  .step-number {
-    position: absolute;
-    top: -14px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--teal);
-    color: #000;
-    font-weight: 800;
-    font-size: 0.8rem;
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .how-card .icon {
-    font-size: 2.2rem;
-    margin-bottom: 14px;
-  }
-
-  .how-card h3 {
-    font-size: 1rem;
-    font-weight: 700;
-    margin-bottom: 8px;
-  }
-
-  .how-card p {
-    color: var(--muted);
-    font-size: 0.88rem;
-  }
-
-  /* ── FEATURES ── */
-  .features-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 20px;
-  }
-
-  .feature-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 24px;
-  }
-
-  .feature-tag {
-    display: inline-block;
-    background: rgba(240,165,0,0.1);
-    color: var(--gold);
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    padding: 4px 10px;
-    border-radius: 4px;
-    margin-bottom: 12px;
-  }
-
-  .feature-card h3 {
-    font-size: 1rem;
-    font-weight: 700;
-    margin-bottom: 6px;
-  }
-
-  .feature-card p {
-    color: var(--muted);
-    font-size: 0.88rem;
-  }
-
-  /* ── PRIVACY ── */
-  .privacy-section {
-    margin: 0 5%;
-    background: linear-gradient(135deg,
-      rgba(0,201,167,0.08) 0%,
-      rgba(240,165,0,0.05) 100%);
-    border: 1px solid rgba(0,201,167,0.2);
-    border-radius: 24px;
-    padding: 60px 5%;
-    text-align: center;
-  }
-
-  .privacy-section h2 {
-    font-size: clamp(1.6rem, 3.5vw, 2.4rem);
-    font-weight: 800;
-    letter-spacing: -1px;
-    margin-bottom: 16px;
-  }
-
-  .privacy-section p {
-    color: var(--muted);
-    max-width: 500px;
-    margin: 0 auto 36px;
-  }
-
-  .privacy-points {
-    display: flex;
-    justify-content: center;
-    gap: 32px;
-    flex-wrap: wrap;
-  }
-
-  .privacy-point {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: var(--teal);
-    font-weight: 600;
-    font-size: 0.9rem;
-  }
-
-  /* ── CTA ── */
-  .cta-section {
-    padding: 100px 5%;
-    text-align: center;
-  }
-
-  .cta-section h2 {
-    font-size: clamp(1.8rem, 4vw, 3rem);
-    font-weight: 800;
-    letter-spacing: -1px;
-    margin-bottom: 16px;
-  }
-
-  .cta-section p {
-    color: var(--muted);
-    margin-bottom: 36px;
-    font-size: 1.05rem;
-  }
-
-  /* ── FOOTER ── */
-  footer {
-    text-align: center;
-    padding: 32px 5%;
-    border-top: 1px solid var(--border);
-    color: var(--muted);
-    font-size: 0.82rem;
-  }
-
-  footer .logo { font-size: 1.1rem; margin-bottom: 8px; display: block; }
-
-  /* ── SUCCESS STATE ── */
-  .success-msg {
-    display: none;
-    background: rgba(0,201,167,0.1);
-    border: 1px solid rgba(0,201,167,0.3);
-    color: var(--teal);
-    padding: 14px 24px;
-    border-radius: 10px;
-    font-weight: 600;
-    margin-top: 12px;
-  }
-
-  /* ── MOBILE ── */
-  @media (max-width: 600px) {
-    .form-wrap { flex-direction: column; }
-    .form-wrap input, .btn-primary { width: 100%; }
-    .stats { gap: 24px; }
-    .privacy-points { flex-direction: column; align-items: center; }
-    .trust-row { flex-direction: column; align-items: center; gap: 12px; }
-  }
-</style>
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      padding: 28px 5%;
+      color: var(--text-muted);
+      font-size: 0.82rem;
+      border-top: 1px solid var(--border);
+    }
+    footer a { color: var(--text-muted); text-decoration: none; }
+    footer a:hover { color: var(--text); }
+  </style>
 </head>
 <body>
 
-<!-- NAV -->
+<!-- Nav -->
 <nav>
   <div class="logo">Lega<span>safe</span></div>
-  <a href="#waitlist" class="nav-cta">Get Early Access</a>
+  <a href="https://legasafe.streamlit.app" target="_blank" class="nav-cta">Try it free →</a>
 </nav>
 
-<!-- HERO -->
-<section class="hero">
-  <div class="badge">🇮🇳 Built for India · Private Beta</div>
-
-  <h1>
-    Find every subscription<br>
-    <span class="highlight">draining your bank account.</span>
-  </h1>
-
-  <p>
-    Legasafe scans your bank statement and instantly shows
-    forgotten subscriptions, wasted money, and monthly
-    spending trends. Your data never leaves your device.
-  </p>
-
-  <div class="form-wrap" id="waitlist">
-    <input type="email" id="emailInput"
-           placeholder="your@email.com"
-           autocomplete="email">
-    <button class="btn-primary" onclick="handleSignup()">
-      Get Early Access →
-    </button>
+<!-- Hero -->
+<div class="hero">
+  <div class="badge-row">
+    <span class="badge">🇮🇳 Built for India</span>
+    <span class="badge">🔒 Privacy First</span>
+    <span class="badge">⚡ Free Forever</span>
   </div>
 
-  <div class="success-msg" id="successMsg">
-    ✅ You're on the list! We'll reach out soon.
+  <div class="live-pill">
+    <span class="live-dot"></span>
+    App is live — no signup needed
+  </div>
+
+  <h1>Find every subscription<br /><em>draining your bank account.</em></h1>
+  <p>Legasafe scans your bank statement PDF and instantly shows forgotten subscriptions, wasted money, and monthly spending trends. Your data never leaves your device.</p>
+
+  <div class="cta-group">
+    <a href="https://legasafe.streamlit.app" target="_blank" class="btn-primary">
+      ⚡ Try it free — 60 seconds
+    </a>
+    <a href="#waitlist" class="btn-secondary">Get updates →</a>
   </div>
 
   <div class="trust-row">
-    <div class="trust-item">🔒 No data uploaded ever</div>
-    <div class="trust-item">🇮🇳 Indian bank statements</div>
-    <div class="trust-item">⚡ Results in 60 seconds</div>
+    <span class="trust-item"><span>🔒</span>No data uploaded ever</span>
+    <span class="trust-item"><span>🇮🇳</span>Indian bank statements</span>
+    <span class="trust-item"><span>⚡</span>Results in 60 seconds</span>
+    <span class="trust-item"><span>✅</span>No account required</span>
+  </div>
+</div>
+
+<!-- Stats -->
+<div class="stats">
+  <div class="stat"><div class="stat-num">₹18,000+</div><div class="stat-label">Avg yearly subscription waste</div></div>
+  <div class="stat"><div class="stat-num">750M+</div><div class="stat-label">Indian smartphone users</div></div>
+  <div class="stat"><div class="stat-num">&lt;5%</div><div class="stat-label">Track their subscriptions</div></div>
+  <div class="stat"><div class="stat-num">50+</div><div class="stat-label">Indian services detected</div></div>
+</div>
+
+<!-- Problems -->
+<section id="problems">
+  <p class="section-title">5 problems nobody is solving</p>
+  <p class="section-sub">Every Indian with a smartphone has these problems. No single app solves all of them. Until now.</p>
+  <div class="cards">
+    <div class="card">
+      <div class="card-icon">💸</div>
+      <h3>The Forgotten Subscription Trap</h3>
+      <p>You've been paying ₹4,199/month for PlayStation for 8 months without using it. Nobody catches this. Legasafe does — automatically.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">📅</div>
+      <h3>Annual vs Monthly Confusion</h3>
+      <p>"Did I pay ₹1,189 this month or is that the whole year?" People genuinely don't know. Legasafe tells you instantly.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">👁️</div>
+      <h3>UPI Spending Blindness</h3>
+      <p>UPI makes spending invisible. You tap and forget. Even "Bittu Tiki Wala" gets categorised automatically. Every rupee gets a name.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">📊</div>
+      <h3>No Monthly Awareness</h3>
+      <p>"Why is this month so tight?" People have no idea their food spending went up 40% in April. Legasafe shows the trend before it becomes a crisis.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🙏</div>
+      <h3>Digital Chaos After Death</h3>
+      <p>Millions of Indian families are left with no idea what subscriptions existed, what accounts were active, or where the money went. Legasafe fixes this.</p>
+    </div>
   </div>
 </section>
 
-<!-- STATS -->
-<div class="stats">
-  <div class="stat">
-    <div class="stat-number">₹18,000+</div>
-    <div class="stat-label">Avg yearly subscription waste</div>
-  </div>
-  <div class="stat">
-    <div class="stat-number">750M+</div>
-    <div class="stat-label">Indian smartphone users</div>
-  </div>
-  <div class="stat">
-    <div class="stat-number">&lt;5%</div>
-    <div class="stat-label">Track their subscriptions</div>
-  </div>
-  <div class="stat">
-    <div class="stat-number">10M+</div>
-    <div class="stat-label">Deaths/year — digital chaos left behind</div>
-  </div>
-</div>
-
-<!-- PROBLEMS -->
-<div class="section">
-  <div class="section-label">The Problem</div>
-  <h2 class="section-title">5 problems nobody is solving</h2>
-  <p class="section-sub">
-    Every Indian with a smartphone has these problems.
-    No single app solves all of them. Until now.
-  </p>
-
-  <div class="problems-grid">
-    <div class="problem-card">
-      <div class="problem-icon">💸</div>
-      <h3>The Forgotten Subscription Trap</h3>
-      <p>You've been paying ₹4,199/month for PlayStation for
-         8 months without using it. Nobody catches this.
-         Legasafe does — automatically.</p>
+<!-- How It Works -->
+<section id="how">
+  <p class="section-title">Three steps. 60 seconds.</p>
+  <p class="section-sub">No account needed. No bank login. Just your statement PDF.</p>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h3>📄 Download your statement</h3>
+        <p>Get a PDF from your bank app or net banking. Works with SBI, HDFC, ICICI, Axis, Kotak and all major Indian banks.</p>
+      </div>
     </div>
-    <div class="problem-card">
-      <div class="problem-icon">📅</div>
-      <h3>Annual vs Monthly Confusion</h3>
-      <p>"Did I pay ₹1,189 this month or is that the whole year?"
-         People genuinely don't know. Legasafe tells you
-         instantly and calculates the true yearly cost.</p>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h3>🔍 Upload it to Legasafe</h3>
+        <p>We read it locally on your device. Nothing is sent to any server. Ever. Zero data uploaded.</p>
+      </div>
     </div>
-    <div class="problem-card">
-      <div class="problem-icon">👁️</div>
-      <h3>UPI Spending Blindness</h3>
-      <p>UPI makes spending invisible. You tap and forget.
-         Even "Bittu Tiki Wala" gets categorised automatically.
-         Every rupee gets a name.</p>
-    </div>
-    <div class="problem-card">
-      <div class="problem-icon">📊</div>
-      <h3>No Monthly Awareness</h3>
-      <p>"Why is this month so tight?" People have no idea
-         their food spending went up 40% in April.
-         Legasafe shows the trend before it becomes a crisis.</p>
-    </div>
-    <div class="problem-card">
-      <div class="problem-icon">🙏</div>
-      <h3>Digital Chaos After Death</h3>
-      <p>Millions of Indian families are left with no idea
-         what subscriptions existed, what accounts were active,
-         or where the money went. Legasafe fixes this.</p>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <h3>💡 See your full picture</h3>
+        <p>Every subscription, every UPI merchant, monthly trends, budget alerts, forgotten charges — and export it all as CSV.</p>
+      </div>
     </div>
   </div>
-</div>
-
-<!-- HOW IT WORKS -->
-<div class="section">
-  <div class="section-label">How It Works</div>
-  <h2 class="section-title">Three steps. 60 seconds.</h2>
-  <p class="section-sub">
-    No account needed. No bank login. Just your statement PDF.
-  </p>
-
-  <div class="how-grid">
-    <div class="how-card">
-      <div class="step-number">1</div>
-      <div class="icon">📄</div>
-      <h3>Download your statement</h3>
-      <p>Get a PDF from your bank app. Works with SBI, HDFC,
-         ICICI, Axis, Kotak and all major Indian banks.</p>
-    </div>
-    <div class="how-card">
-      <div class="step-number">2</div>
-      <div class="icon">🔍</div>
-      <h3>Upload it to Legasafe</h3>
-      <p>We read it locally on your device. Nothing is sent
-         to any server. Ever. Zero data uploaded.</p>
-    </div>
-    <div class="how-card">
-      <div class="step-number">3</div>
-      <div class="icon">💡</div>
-      <h3>See your full picture</h3>
-      <p>Every subscription, every UPI merchant, monthly trends,
-         budget alerts, and forgotten charges — instantly.</p>
-    </div>
+  <div style="text-align:center; margin-top: 36px;">
+    <a href="https://legasafe.streamlit.app" target="_blank" class="btn-primary">
+      Try it now →
+    </a>
   </div>
-</div>
+</section>
 
-<!-- FEATURES -->
-<div class="section">
-  <div class="section-label">Features</div>
-  <h2 class="section-title">Everything in one place</h2>
-  <p class="section-sub">
-    Built specifically for how Indians spend money.
-  </p>
-
-  <div class="features-grid">
-    <div class="feature-card">
-      <div class="feature-tag">Subscriptions</div>
-      <h3>50+ Indian services detected</h3>
-      <p>Netflix, Hotstar, Spotify, Zomato, Swiggy and more —
-         with actual charged amounts, not estimates.</p>
-    </div>
-    <div class="feature-card">
-      <div class="feature-tag">Smart Detection</div>
-      <h3>Annual vs Monthly auto-detected</h3>
-      <p>Never confuses a ₹1,189/year Spotify plan with
-         a monthly charge. True yearly cost always correct.</p>
-    </div>
-    <div class="feature-card">
-      <div class="feature-tag">UPI Intelligence</div>
-      <h3>Understands Indian merchants</h3>
-      <p>"Bittu Tiki Wala" → Food. "Sharma Medicals" → Health.
-         Even informal UPI names get categorised correctly.</p>
-    </div>
-    <div class="feature-card">
-      <div class="feature-tag">Monthly Trends</div>
-      <h3>Spending report card</h3>
-      <p>See how your spending changes month to month.
-         Spike alerts tell you when something went wrong.</p>
-    </div>
-    <div class="feature-card">
-      <div class="feature-tag">Budget Alerts</div>
-      <h3>Set limits per category</h3>
-      <p>Set monthly budgets for food, transport, gaming.
-         Know instantly which categories are over budget.</p>
-    </div>
-    <div class="feature-card">
-      <div class="feature-tag">Legacy</div>
-      <h3>Digital life handover</h3>
-      <p>Coming soon — organise your complete digital footprint
-         so your family isn't left in chaos when you're gone.</p>
-    </div>
-  </div>
-</div>
-
-<!-- PRIVACY -->
-<div class="privacy-section">
+<!-- Privacy Box -->
+<div class="privacy-box" style="padding: 60px 5%;">
   <h2>Your data never leaves your device. Ever.</h2>
-  <p>
-    In a world where every app wants your bank login,
-    Legasafe does the opposite. We read your PDF locally.
-    No servers. No storage. No accounts. Just answers.
-  </p>
-  <div class="privacy-points">
-    <div class="privacy-point">🔒 Zero data uploaded</div>
-    <div class="privacy-point">🚫 No bank login required</div>
-    <div class="privacy-point">📵 Works offline after setup</div>
-    <div class="privacy-point">🗑️ Nothing stored anywhere</div>
+  <p>In a world where every app wants your bank login, Legasafe does the opposite. We read your PDF locally. No servers. No storage. No accounts. Just answers.</p>
+  <div class="privacy-pills">
+    <span class="privacy-pill">🔒 Zero data uploaded</span>
+    <span class="privacy-pill">🚫 No bank login required</span>
+    <span class="privacy-pill">📵 Works offline after setup</span>
+    <span class="privacy-pill">🗑️ Nothing stored anywhere</span>
   </div>
 </div>
 
-<!-- FINAL CTA -->
-<div class="cta-section">
-  <h2>Join the waitlist.<br>It's completely free.</h2>
-  <p>Be the first to know when Legasafe launches.</p>
+<!-- FAQ — SEO Section -->
+<section id="faq">
+  <p class="section-title">Frequently Asked Questions</p>
+  <p class="section-sub">Everything you need to know about Legasafe.</p>
+  <div class="faq">
 
-  <div class="form-wrap" style="justify-content:center; margin: 0 auto;">
-    <input type="email" id="emailInput2"
-           placeholder="your@email.com"
-           autocomplete="email">
-    <button class="btn-primary" onclick="handleSignup2()">
-      Claim Early Access →
-    </button>
+    <div class="faq-item">
+      <h3>Does Legasafe work with SBI bank statements?</h3>
+      <p>Yes. Legasafe works with SBI, HDFC, ICICI, Axis, Kotak, and most major Indian bank PDF statements. Download your statement from your bank's app or net banking portal and upload it directly. No special format required.</p>
+    </div>
+
+    <div class="faq-item">
+      <h3>Is my bank statement data safe with Legasafe?</h3>
+      <p>Completely. Legasafe processes your PDF entirely on your device. Nothing is uploaded to any server. Your financial data never leaves your phone or computer. When you close the tab, everything is gone.</p>
+    </div>
+
+    <div class="faq-item">
+      <h3>How do I find forgotten subscriptions in my bank statement?</h3>
+      <p>Upload your bank statement PDF to Legasafe and it automatically scans for recurring charges — Netflix, Hotstar, Spotify, Zomato Gold, Amazon Prime, and 50+ other Indian services. It also catches annual subscriptions and flags charges you might have forgotten about.</p>
+    </div>
+
+    <div class="faq-item">
+      <h3>Does Legasafe understand UPI transactions?</h3>
+      <p>Yes. Legasafe categorises UPI payments automatically — including informal merchant names like "Sharma Medical" or "Bittu Tiki Wala". Every UPI rupee gets a spending category so you can see exactly where your money goes.</p>
+    </div>
+
+    <div class="faq-item">
+      <h3>Can I export my transaction data from Legasafe?</h3>
+      <p>Yes. You can download your full transaction list, subscriptions breakdown, and summary report as CSV files. Use it in Excel, Google Sheets, or any budgeting app you prefer.</p>
+    </div>
+
+    <div class="faq-item">
+      <h3>Is Legasafe free to use?</h3>
+      <p>Yes, completely free. No account required, no credit card, no hidden charges. Just upload your PDF and get your results instantly.</p>
+    </div>
+
+    <div class="faq-item">
+      <h3>What is a financial health score?</h3>
+      <p>Legasafe analyses your spending patterns — subscription load, savings rate, spending spikes — and gives you a score out of 100. It's a quick snapshot of whether your finances are on track this month.</p>
+    </div>
+
+    <div class="faq-item">
+      <h3>Which Indian banks does Legasafe support?</h3>
+      <p>Legasafe supports all major Indian banks including SBI, HDFC Bank, ICICI Bank, Axis Bank, Kotak Mahindra Bank, Bank of Baroda, Punjab National Bank, Canara Bank, and most other scheduled banks. If your bank provides a PDF statement, Legasafe can read it.</p>
+    </div>
+
   </div>
-  <div class="success-msg" id="successMsg2"
-       style="max-width:400px; margin:12px auto 0;">
-    ✅ You're on the list! We'll reach out soon.
-  </div>
+</section>
+
+<!-- Waitlist -->
+<div class="waitlist-section" id="waitlist">
+  <h2>Stay in the loop.</h2>
+  <p>Get notified about new features, bank support, and updates. Free forever.</p>
+  <form
+    class="waitlist-form"
+    action="https://formspree.io/f/xjgzbnlv"
+    method="POST"
+    onsubmit="handleSubmit(event)"
+  >
+    <input type="email" name="email" placeholder="your@email.com" required />
+    <button type="submit">Join waitlist →</button>
+  </form>
+  <div id="success-msg">✅ You're on the list! We'll reach out soon.</div>
 </div>
 
-<!-- FOOTER -->
+<!-- Footer -->
 <footer>
-  <span class="logo">Lega<span style="color:var(--text)">safe</span></span>
-  Manage your digital life today.<br>
-  Leave everything in order for tomorrow.<br><br>
-  🇮🇳 Built in India · 🔒 Privacy First · ✉️ getlegasafe@gmail.com
+  <p style="margin-bottom: 8px;">
+    Legasafe — Manage your digital life today. Leave everything in order for tomorrow.
+  </p>
+  <p>
+    🇮🇳 Built in India &nbsp;·&nbsp; 🔒 Privacy First &nbsp;·&nbsp;
+    <a href="mailto:getlegasafe@gmail.com">getlegasafe@gmail.com</a> &nbsp;·&nbsp;
+    <a href="https://twitter.com/legasafein" target="_blank">@legasafein</a> &nbsp;·&nbsp;
+    <a href="https://legasafe.streamlit.app" target="_blank">Try the app →</a>
+  </p>
 </footer>
 
 <script>
-  function handleSignup() {
-    const email = document.getElementById('emailInput').value.trim();
-    if (!email || !email.includes('@')) {
-      alert('Please enter a valid email address.');
-      return;
-    }
-    // Send to Formspree — replace YOUR_FORM_ID with your actual ID
-    submitEmail(email, 'successMsg');
-  }
-
-  function handleSignup2() {
-    const email = document.getElementById('emailInput2').value.trim();
-    if (!email || !email.includes('@')) {
-      alert('Please enter a valid email address.');
-      return;
-    }
-    submitEmail(email, 'successMsg2');
-  }
-
-  function submitEmail(email, successId) {
-    fetch('https://formspree.io/f/xjgzbnlv', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ email: email })
-});
-
-    // Option 2: Simple local log (works without any backend)
-    console.log('Waitlist signup:', email);
-
-    // Show success
-    document.getElementById(successId).style.display = 'block';
-    document.getElementById(
-      successId === 'successMsg' ? 'emailInput' : 'emailInput2'
-    ).value = '';
-  }
-
-  // Smooth scroll for nav CTA
-  document.querySelector('.nav-cta').addEventListener('click', function(e) {
+  function handleSubmit(e) {
     e.preventDefault();
-    document.getElementById('waitlist').scrollIntoView({
-      behavior: 'smooth'
+    const form = e.target;
+    const data = new FormData(form);
+    fetch(form.action, {
+      method: 'POST',
+      body: data,
+      headers: { 'Accept': 'application/json' }
+    }).then(res => {
+      if (res.ok) {
+        form.style.display = 'none';
+        document.getElementById('success-msg').style.display = 'block';
+      }
     });
-  });
+  }
 </script>
 
 </body>
