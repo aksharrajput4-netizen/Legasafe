@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://aksharrajput4-netizen.github.io/Legasafe/sitemap.xml
