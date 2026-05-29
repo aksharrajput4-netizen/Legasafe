@@ -167,8 +167,8 @@ if uploaded_file:
 
     # ── 3. Subscription Radar ────────────────────────────────────────────────
     def resolve_frequency(sub):
-    name = sub.get('name', '').lower()
-    freq = sub.get('frequency', '').lower().strip()
+     name = sub.get('name', '').lower()
+     freq = sub.get('frequency', '').lower().strip()
 
     if any(x in name for x in ['annual', 'yearly', '/year', 'per year']):
         return 'Annual', 1
