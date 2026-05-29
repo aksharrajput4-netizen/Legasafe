@@ -147,12 +147,18 @@ if uploaded_file:
         for sub in subs:
             badge, multiplier = resolve_frequency(sub)
             yearly = sub['amount'] * multiplier
+
+            cancel_link = ""
+            if sub.get("cancellation_url"):
+                cancel_link = f' &nbsp;|&nbsp; <a href="https://{sub["cancellation_url"]}" target="_blank" style="color:#d9534f; text-decoration:none;">Cancel Subscription</a>'
+
             st.markdown(
                 f'<div class="sub-card">'
                 f'<b>{sub["name"]}</b>'
                 f'<span style="color:{TEXT_MUTED}"> · {badge}</span>'
                 f' &nbsp;·&nbsp; ₹{sub["amount"]:,.0f}'
                 f' &nbsp;|&nbsp; <span class="sub-yearly">₹{yearly:,.0f}/yr</span>'
+                f'{cancel_link}'
                 f'</div>',
                 unsafe_allow_html=True
             )
