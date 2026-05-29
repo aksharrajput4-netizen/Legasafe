@@ -10,6 +10,17 @@ def process_pdf(file, password=None):
     #  DATABASES
     # ════════════════════════════════════════════════════════════
 
+    CANCELLATION_URLS = {
+        "NETFLIX": "netflix.com/cancelplan",
+        "SPOTIFY": "spotify.com/account",
+        "AMAZON PRIME": "amazon.in/primecentral",
+        "HOTSTAR": "hotstar.com/account",
+        "ZOMATO": "zomato.com/subscription",
+        "SWIGGY": "swiggy.com/membership",
+        "YOUTUBE PREMIUM": "youtube.com/paid_memberships",
+        "GOOGLE PLAY": "play.google.com/store/account/subscriptions"
+    }
+
     ANNUAL_KEYWORDS = [
         "ANNUAL", "YEARLY", "1 YEAR", "ONE YEAR",
         "12 MONTH", "12MONTH", "365", "1YR",
@@ -481,8 +492,8 @@ def process_pdf(file, password=None):
         if actual_price > 50000:
             actual_price = info["price"]
 
-       display_name = keyword.title()
-        frequency = "monthly"   # ← ADD THIS LINE
+        display_name = keyword.title()
+        frequency = "monthly"
 
         # Detect billing cycle from amount ratio
         if info["price"] > 1:
@@ -490,13 +501,13 @@ def process_pdf(file, password=None):
                 ratio = actual_price / info["price"]
                 if ratio >= 9:
                     display_name += " (Annual)"
-                    frequency = "annual"          # ← ADD
+                    frequency = "annual"
                 elif ratio >= 5:
                     display_name += " (6-Month)"
-                    frequency = "6-month"         # ← ADD
+                    frequency = "6-month"
                 elif ratio >= 2.5:
                     display_name += " (Quarterly)"
-                    frequency = "quarterly"       # ← ADD
+                    frequency = "quarterly"
             except ZeroDivisionError:
                 pass
 
@@ -515,11 +526,12 @@ def process_pdf(file, password=None):
         )
 
         found_subs.append({
-            "name":      display_name,
-            "amount":    actual_price,
-            "frequency": frequency,   # ← ADD THIS LINE
-            "count":     count,
-            "keyword":   keyword,
+            "name":             display_name,
+            "amount":           actual_price,
+            "frequency":        frequency,
+            "count":            count,
+            "keyword":          keyword,
+            "cancellation_url": CANCELLATION_URLS.get(keyword, "")
         })
 
     # ════════════════════════════════════════════════════════════
@@ -616,8 +628,7 @@ def process_pdf(file, password=None):
     )
 
     # Category spending totals for charts
-   "categories":         category_totals,
-        "category_totals":    category_totals,
+    category_totals = {
         cat: sum(t["debit"] for t in txns)
         for cat, txns in categorised.items()
         if sum(t["debit"] for t in txns) > 0
