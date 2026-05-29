@@ -166,14 +166,33 @@ if uploaded_file:
         st.success(f"✅ Under budget — ₹{left:,.0f} remaining ({pct}% of budget left)")
 
     # ── 3. Subscription Radar ────────────────────────────────────────────────
-    sub_rows = []
-    if subs:
-        st.divider()
-        st.subheader(f"📡 Subscription Radar — {len(subs)} found")
-        for sub in subs:
-            freq   = sub.get('frequency', 'monthly')
-            yearly = sub['amount'] * 12 if freq == 'monthly' else sub['amount']
-            badge  = "Annual" if freq == 'annual' else "Monthly"
+    def resolve_frequency(sub):
+    name = sub.get('name', '').lower()
+    freq = sub.get('frequency', '').lower().strip()
+
+    if any(x in name for x in ['annual', 'yearly', '/year', 'per year']):
+        return 'Annual', 1
+    if any(x in name for x in ['6-month', '6month', 'half-year', 'semi', 'biannual']):
+        return '6-Month', 2
+    if any(x in name for x in ['3-month', '3month', 'quarter', 'quarterly']):
+        return 'Quarterly', 4
+
+    if freq in ('annual', 'annually', 'yearly'):
+        return 'Annual', 1
+    if freq in ('semi-annual', '6-month', 'half-yearly', 'biannual'):
+        return '6-Month', 2
+    if freq in ('quarterly', '3-month', 'quarter'):
+        return 'Quarterly', 4
+
+    return 'Monthly', 12
+
+sub_rows = []
+if subs:
+    st.divider()
+    st.subheader(f"📡 Subscription Radar — {len(subs)} found")
+    for sub in subs:
+        badge, multiplier = resolve_frequency(sub)
+        yearly = sub['amount'] * multiplier
             st.markdown(
                 f'<div class="sub-card">'
                 f'<b>{sub["name"]}</b>'
