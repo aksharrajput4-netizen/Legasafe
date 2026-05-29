@@ -235,12 +235,12 @@ if uploaded_file:
     ecol1, ecol2, ecol3 = st.columns(3)
 
     if txns:
-        tx_csv = pd.DataFrame(txns).to_csv(index=False).encode('utf-8')
+        tx_csv = pd.DataFrame(txns).to_csv(index=False).encode('utf-8-sig')
         ecol1.download_button("📄 All Transactions", tx_csv,
                               "legasafe_transactions.csv", "text/csv", use_container_width=True)
 
     if sub_rows:
-        subs_csv = pd.DataFrame(sub_rows).to_csv(index=False).encode('utf-8')
+        subs_csv = pd.DataFrame(sub_rows).to_csv(index=False).encode('utf-8-sig')
         ecol2.download_button("📋 Subscriptions", subs_csv,
                               "legasafe_subscriptions.csv", "text/csv", use_container_width=True)
 
@@ -254,7 +254,7 @@ if uploaded_file:
             f"{score}/100",
             f"₹{sum(r['Yearly Cost (₹)'] for r in sub_rows) if sub_rows else 0:,.0f}"
         ]
-    }).to_csv(index=False).encode('utf-8')
+    }).to_csv(index=False).encode('utf-8-sig')
     ecol3.download_button("📊 Summary Report", summary_csv,
                           "legasafe_summary.csv", "text/csv", use_container_width=True)
 
