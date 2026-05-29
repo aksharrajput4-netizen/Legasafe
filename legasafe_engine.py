@@ -481,7 +481,8 @@ def process_pdf(file, password=None):
         if actual_price > 50000:
             actual_price = info["price"]
 
-        display_name = keyword.title()
+       display_name = keyword.title()
+        frequency = "monthly"   # ← ADD THIS LINE
 
         # Detect billing cycle from amount ratio
         if info["price"] > 1:
@@ -489,10 +490,13 @@ def process_pdf(file, password=None):
                 ratio = actual_price / info["price"]
                 if ratio >= 9:
                     display_name += " (Annual)"
+                    frequency = "annual"          # ← ADD
                 elif ratio >= 5:
                     display_name += " (6-Month)"
+                    frequency = "6-month"         # ← ADD
                 elif ratio >= 2.5:
                     display_name += " (Quarterly)"
+                    frequency = "quarterly"       # ← ADD
             except ZeroDivisionError:
                 pass
 
@@ -511,10 +515,11 @@ def process_pdf(file, password=None):
         )
 
         found_subs.append({
-            "name":    display_name,
-            "amount":  actual_price,
-            "count":   count,
-            "keyword": keyword,
+            "name":      display_name,
+            "amount":    actual_price,
+            "frequency": frequency,   # ← ADD THIS LINE
+            "count":     count,
+            "keyword":   keyword,
         })
 
     # ════════════════════════════════════════════════════════════
@@ -611,7 +616,8 @@ def process_pdf(file, password=None):
     )
 
     # Category spending totals for charts
-    category_totals = {
+   "categories":         category_totals,
+        "category_totals":    category_totals,
         cat: sum(t["debit"] for t in txns)
         for cat, txns in categorised.items()
         if sum(t["debit"] for t in txns) > 0
