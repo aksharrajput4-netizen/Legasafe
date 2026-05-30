@@ -175,6 +175,57 @@ if uploaded_file:
             unsafe_allow_html=True
         )
 
+    # ── Savings Calculator ────────────────────────────────────────────────────
+    forgotten_subs = data.get('forgotten_subs', [])
+    if forgotten_subs:
+        st.divider()
+        st.subheader("💡 Savings Calculator")
+        st.markdown(f"<p style='color:{TEXT_MUTED};margin-top:-10px;'>What you could save by cancelling forgotten subscriptions.</p>", unsafe_allow_html=True)
+
+        for sub in forgotten_subs:
+            monthly_cost = sub['amount']
+            yearly_cost = monthly_cost * 12
+            five_year_cost = yearly_cost * 5
+
+            st.markdown(
+                f'<div class="sub-card" style="margin-bottom: 12px;">'
+                f'<div style="margin-bottom: 4px;"><b>{sub["name"]}</b></div>'
+                f'<div style="display: flex; justify-content: space-between; color:{TEXT_MUTED}; font-size: 0.85rem;">'
+                f'<span>Monthly: <span style="color:{TEXT}">₹{monthly_cost:,.0f}</span></span>'
+                f'<span>Yearly: <span style="color:{AMBER}">₹{yearly_cost:,.0f}</span></span>'
+                f'<span>5-Year: <span style="color:{RED}">₹{five_year_cost:,.0f}</span></span>'
+                f'</div>'
+                f'</div>',
+                unsafe_allow_html=True
+            )
+
+        total_one_year = sum(s['amount'] * 12 for s in forgotten_subs)
+        total_five_year = sum(s['amount'] * 12 * 5 for s in forgotten_subs)
+
+        real_terms_item = "A nice weekend getaway 🏕️"
+        if total_five_year >= 200000:
+            real_terms_item = "College fees 🎓"
+        elif total_five_year >= 100000:
+            real_terms_item = "A premium laptop 💻"
+        elif total_five_year >= 50000:
+            real_terms_item = "An international trip ✈️"
+        elif total_five_year >= 20000:
+            real_terms_item = "A new smartphone 📱"
+
+        st.markdown(
+            f'<div style="background:{SURFACE}; border:1px solid {BORDER}; border-radius:10px; padding:16px; margin-top:16px;">'
+            f'<div style="color:{TEXT_MUTED}; font-size:0.9rem; margin-bottom:8px;">If you cancel all these today, you will save:</div>'
+            f'<div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:16px;">'
+            f'<div><div style="color:{TEXT_MUTED}; font-size:0.8rem;">1 Year</div><div style="color:{AMBER}; font-size:1.4rem; font-weight:700;">₹{total_one_year:,.0f}</div></div>'
+            f'<div><div style="color:{TEXT_MUTED}; font-size:0.8rem; text-align:right;">5 Years</div><div style="color:{GREEN}; font-size:1.8rem; font-weight:800;">₹{total_five_year:,.0f}</div></div>'
+            f'</div>'
+            f'<hr style="border-color:{BORDER}; margin:12px 0;">'
+            f'<div style="color:{TEXT_MUTED}; font-size:0.85rem;">That 5-year savings equals:</div>'
+            f'<div style="color:{GOLD_LIGHT}; font-size:1.1rem; font-weight:600; margin-top:4px;">{real_terms_item}</div>'
+            f'</div>',
+            unsafe_allow_html=True
+        )
+
     # ── 4. Category Breakdown ─────────────────────────────────────────────────
     if cats:
         st.divider()
