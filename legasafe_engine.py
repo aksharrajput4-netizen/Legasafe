@@ -4,112 +4,117 @@ from collections import defaultdict
 from datetime import datetime
 import pdfplumber
 
+# ════════════════════════════════════════════════════════════
+#  DATABASES
+# ════════════════════════════════════════════════════════════
+
+CANCELLATION_URLS = {
+    "NETFLIX": "netflix.com/cancelplan",
+    "SPOTIFY": "spotify.com/account",
+    "AMAZON PRIME": "amazon.in/primecentral",
+    "HOTSTAR": "hotstar.com/account",
+    "ZOMATO": "zomato.com/subscription",
+    "SWIGGY": "swiggy.com/membership",
+    "YOUTUBE PREMIUM": "youtube.com/paid_memberships",
+    "GOOGLE PLAY": "play.google.com/store/account/subscriptions"
+}
+
+ANNUAL_KEYWORDS = [
+    "ANNUAL", "YEARLY", "1 YEAR", "ONE YEAR",
+    "12 MONTH", "12MONTH", "365", "1YR",
+    "YEAR PLAN", "ANNUAL PLAN", "YEARLY PLAN", "PER YEAR",
+]
+
+MONTH_MAP = {
+    "01": "Jan", "02": "Feb", "03": "Mar",
+    "04": "Apr", "05": "May", "06": "Jun",
+    "07": "Jul", "08": "Aug", "09": "Sep",
+    "10": "Oct", "11": "Nov", "12": "Dec",
+}
+
+SUBS_DB = {
+    "NETFLIX":             {"cat": "Entertainment", "price": 649},
+    "HOTSTAR":             {"cat": "Entertainment", "price": 299},
+    "DISNEY":              {"cat": "Entertainment", "price": 299},
+    "SONYLIV":             {"cat": "Entertainment", "price": 299},
+    "ZEE5":                {"cat": "Entertainment", "price": 99},
+    "VOOT":                {"cat": "Entertainment", "price": 99},
+    "JIOCINEMA":           {"cat": "Entertainment", "price": 99},
+    "MXPLAYER":            {"cat": "Entertainment", "price": 99},
+    "ALTBALAJI":           {"cat": "Entertainment", "price": 100},
+    "TATAPLAY":            {"cat": "Entertainment", "price": 200},
+    "DISCOVERY":           {"cat": "Entertainment", "price": 299},
+    "EROSNOW":             {"cat": "Entertainment", "price": 99},
+    "SPOTIFY":             {"cat": "Music",         "price": 119},
+    "JIOSAAVN":            {"cat": "Music",         "price": 99},
+    "GAANA":               {"cat": "Music",         "price": 99},
+    "WYNK":                {"cat": "Music",         "price": 99},
+    "APPLE MUSIC":         {"cat": "Music",         "price": 99},
+    "YOUTUBE MUSIC":       {"cat": "Music",         "price": 99},
+    "YOUTUBE PREMIUM":     {"cat": "Video/Music",   "price": 129},
+    "YOUTUBE":             {"cat": "Video/Music",   "price": 129},
+    "ZOMATO":              {"cat": "Food",          "price": 199},
+    "SWIGGY":              {"cat": "Food",          "price": 249},
+    "BLINKIT":             {"cat": "Food",          "price": 99},
+    "ZEPTO":               {"cat": "Food",          "price": 99},
+    "BIGBASKET":           {"cat": "Food",          "price": 99},
+    "CUREFIT":             {"cat": "Health",        "price": 800},
+    "HEALTHIFYME":         {"cat": "Health",        "price": 400},
+    "PRACTO":              {"cat": "Health",        "price": 299},
+    "ICLOUD":              {"cat": "Storage",       "price": 75},
+    "GOOGLE ONE":          {"cat": "Storage",       "price": 130},
+    # Fixed: Google Play has variable amounts so price=1
+    # to avoid ratio issues
+    "GOOGLE PLAY":         {"cat": "Apps",          "price": 1},
+    "DROPBOX":             {"cat": "Storage",       "price": 800},
+    "MICROSOFT":           {"cat": "Productivity",  "price": 420},
+    "OFFICE 365":          {"cat": "Productivity",  "price": 420},
+    "ADOBE":               {"cat": "Design",        "price": 1675},
+    "CANVA":               {"cat": "Design",        "price": 400},
+    "NOTION":              {"cat": "Productivity",  "price": 400},
+    "GRAMMARLY":           {"cat": "Productivity",  "price": 900},
+    "LINKEDIN":            {"cat": "Professional",  "price": 1300},
+    "ZOOM":                {"cat": "Communication", "price": 1300},
+    "AUDIBLE":             {"cat": "Books",         "price": 199},
+    "KINDLE":              {"cat": "Books",         "price": 169},
+    "BYJU":                {"cat": "Education",     "price": 2000},
+    "UNACADEMY":           {"cat": "Education",     "price": 1500},
+    "VEDANTU":             {"cat": "Education",     "price": 1000},
+    "COURSERA":            {"cat": "Education",     "price": 2500},
+    "AIRTEL":              {"cat": "Telecom",       "price": 299},
+    "VODAFONE":            {"cat": "Telecom",       "price": 299},
+    "BSNL":                {"cat": "Telecom",       "price": 199},
+    "JIO":                 {"cat": "Telecom",       "price": 239},
+    "TINDER":              {"cat": "Social",        "price": 400},
+    "BUMBLE":              {"cat": "Social",        "price": 400},
+    "AMAZON PRIME":        {"cat": "Shopping",      "price": 299},
+    "AMAZON":              {"cat": "Shopping",      "price": 179},
+    "FLIPKART":            {"cat": "Shopping",      "price": 499},
+    "TIMES PRIME":         {"cat": "Bundle",        "price": 999},
+    "XBOX":                {"cat": "Gaming",        "price": 499},
+    "PLAYSTATION NETWORK": {"cat": "Gaming",        "price": 499},
+    "PLAYSTATION":         {"cat": "Gaming",        "price": 499},
+    "STEAM":               {"cat": "Gaming",        "price": 350},
+    # Fixed: Epic Games has variable amounts so price=1
+    "EPIC GAMES":          {"cat": "Gaming",        "price": 1},
+    "PHYSICSWALLAH":   {"cat": "Education", "price": 999},
+    "PW APP":          {"cat": "Education", "price": 999},
+    "KUKU FM":         {"cat": "Entertainment", "price": 199},
+    "POCKET FM":       {"cat": "Entertainment", "price": 199},
+    "HOICHOI":         {"cat": "Entertainment", "price": 299},
+    "SUN NXT":         {"cat": "Entertainment", "price": 99},
+    "HUNGAMA":         {"cat": "Entertainment", "price": 99},
+    "LIONSGATE":       {"cat": "Entertainment", "price": 99},
+    "MANORAMA MAX":    {"cat": "Entertainment", "price": 99},
+    "STAGE OTT":       {"cat": "Entertainment", "price": 99}
+}
+
+COMPILED_SUBS_PATTERNS = {
+    keyword: re.compile(r"\b" + re.escape(keyword) + r"\b")
+    for keyword in SUBS_DB
+}
+
 def process_pdf(file, password=None):
-
-    # ════════════════════════════════════════════════════════════
-    #  DATABASES
-    # ════════════════════════════════════════════════════════════
-
-    CANCELLATION_URLS = {
-        "NETFLIX": "netflix.com/cancelplan",
-        "SPOTIFY": "spotify.com/account",
-        "AMAZON PRIME": "amazon.in/primecentral",
-        "HOTSTAR": "hotstar.com/account",
-        "ZOMATO": "zomato.com/subscription",
-        "SWIGGY": "swiggy.com/membership",
-        "YOUTUBE PREMIUM": "youtube.com/paid_memberships",
-        "GOOGLE PLAY": "play.google.com/store/account/subscriptions"
-    }
-
-    ANNUAL_KEYWORDS = [
-        "ANNUAL", "YEARLY", "1 YEAR", "ONE YEAR",
-        "12 MONTH", "12MONTH", "365", "1YR",
-        "YEAR PLAN", "ANNUAL PLAN", "YEARLY PLAN", "PER YEAR",
-    ]
-
-    MONTH_MAP = {
-        "01": "Jan", "02": "Feb", "03": "Mar",
-        "04": "Apr", "05": "May", "06": "Jun",
-        "07": "Jul", "08": "Aug", "09": "Sep",
-        "10": "Oct", "11": "Nov", "12": "Dec",
-    }
-
-    SUBS_DB = {
-        "NETFLIX":             {"cat": "Entertainment", "price": 649},
-        "HOTSTAR":             {"cat": "Entertainment", "price": 299},
-        "DISNEY":              {"cat": "Entertainment", "price": 299},
-        "SONYLIV":             {"cat": "Entertainment", "price": 299},
-        "ZEE5":                {"cat": "Entertainment", "price": 99},
-        "VOOT":                {"cat": "Entertainment", "price": 99},
-        "JIOCINEMA":           {"cat": "Entertainment", "price": 99},
-        "MXPLAYER":            {"cat": "Entertainment", "price": 99},
-        "ALTBALAJI":           {"cat": "Entertainment", "price": 100},
-        "TATAPLAY":            {"cat": "Entertainment", "price": 200},
-        "DISCOVERY":           {"cat": "Entertainment", "price": 299},
-        "EROSNOW":             {"cat": "Entertainment", "price": 99},
-        "SPOTIFY":             {"cat": "Music",         "price": 119},
-        "JIOSAAVN":            {"cat": "Music",         "price": 99},
-        "GAANA":               {"cat": "Music",         "price": 99},
-        "WYNK":                {"cat": "Music",         "price": 99},
-        "APPLE MUSIC":         {"cat": "Music",         "price": 99},
-        "YOUTUBE MUSIC":       {"cat": "Music",         "price": 99},
-        "YOUTUBE PREMIUM":     {"cat": "Video/Music",   "price": 129},
-        "YOUTUBE":             {"cat": "Video/Music",   "price": 129},
-        "ZOMATO":              {"cat": "Food",          "price": 199},
-        "SWIGGY":              {"cat": "Food",          "price": 249},
-        "BLINKIT":             {"cat": "Food",          "price": 99},
-        "ZEPTO":               {"cat": "Food",          "price": 99},
-        "BIGBASKET":           {"cat": "Food",          "price": 99},
-        "CUREFIT":             {"cat": "Health",        "price": 800},
-        "HEALTHIFYME":         {"cat": "Health",        "price": 400},
-        "PRACTO":              {"cat": "Health",        "price": 299},
-        "ICLOUD":              {"cat": "Storage",       "price": 75},
-        "GOOGLE ONE":          {"cat": "Storage",       "price": 130},
-        # Fixed: Google Play has variable amounts so price=1
-        # to avoid ratio issues
-        "GOOGLE PLAY":         {"cat": "Apps",          "price": 1},
-        "DROPBOX":             {"cat": "Storage",       "price": 800},
-        "MICROSOFT":           {"cat": "Productivity",  "price": 420},
-        "OFFICE 365":          {"cat": "Productivity",  "price": 420},
-        "ADOBE":               {"cat": "Design",        "price": 1675},
-        "CANVA":               {"cat": "Design",        "price": 400},
-        "NOTION":              {"cat": "Productivity",  "price": 400},
-        "GRAMMARLY":           {"cat": "Productivity",  "price": 900},
-        "LINKEDIN":            {"cat": "Professional",  "price": 1300},
-        "ZOOM":                {"cat": "Communication", "price": 1300},
-        "AUDIBLE":             {"cat": "Books",         "price": 199},
-        "KINDLE":              {"cat": "Books",         "price": 169},
-        "BYJU":                {"cat": "Education",     "price": 2000},
-        "UNACADEMY":           {"cat": "Education",     "price": 1500},
-        "VEDANTU":             {"cat": "Education",     "price": 1000},
-        "COURSERA":            {"cat": "Education",     "price": 2500},
-        "AIRTEL":              {"cat": "Telecom",       "price": 299},
-        "VODAFONE":            {"cat": "Telecom",       "price": 299},
-        "BSNL":                {"cat": "Telecom",       "price": 199},
-        "JIO":                 {"cat": "Telecom",       "price": 239},
-        "TINDER":              {"cat": "Social",        "price": 400},
-        "BUMBLE":              {"cat": "Social",        "price": 400},
-        "AMAZON PRIME":        {"cat": "Shopping",      "price": 299},
-        "AMAZON":              {"cat": "Shopping",      "price": 179},
-        "FLIPKART":            {"cat": "Shopping",      "price": 499},
-        "TIMES PRIME":         {"cat": "Bundle",        "price": 999},
-        "XBOX":                {"cat": "Gaming",        "price": 499},
-        "PLAYSTATION NETWORK": {"cat": "Gaming",        "price": 499},
-        "PLAYSTATION":         {"cat": "Gaming",        "price": 499},
-        "STEAM":               {"cat": "Gaming",        "price": 350},
-        # Fixed: Epic Games has variable amounts so price=1
-        "EPIC GAMES":          {"cat": "Gaming",        "price": 1},
-        "PHYSICSWALLAH":   {"cat": "Education", "price": 999},
-        "PW APP":          {"cat": "Education", "price": 999},
-        "KUKU FM":         {"cat": "Entertainment", "price": 199},
-        "POCKET FM":       {"cat": "Entertainment", "price": 199},
-        "HOICHOI":         {"cat": "Entertainment", "price": 299},
-        "SUN NXT":         {"cat": "Entertainment", "price": 99},
-        "HUNGAMA":         {"cat": "Entertainment", "price": 99},
-        "LIONSGATE":       {"cat": "Entertainment", "price": 99},
-        "MANORAMA MAX":    {"cat": "Entertainment", "price": 99},
-        "STAGE OTT":       {"cat": "Entertainment", "price": 99}
-    }
 
     # ════════════════════════════════════════════════════════════
     #  FIX 1 — WORD BOUNDARY KEYWORDS
@@ -462,19 +467,16 @@ def process_pdf(file, password=None):
     seen       = set()
 
     for keyword, info in SUBS_DB.items():
-        pattern_kw  = r"\b" + re.escape(keyword) + r"\b"
+        pattern_regex = COMPILED_SUBS_PATTERNS[keyword]
         matched_txn = None
 
         for txn in transactions:
-            if re.search(
-                    pattern_kw,
-                    txn["description"].upper()):
+            if pattern_regex.search(txn["description"].upper()):
                 matched_txn = txn
                 break
 
         # Also check raw text as fallback
-        if not matched_txn and not re.search(
-                pattern_kw, full_text.upper()):
+        if not matched_txn and not pattern_regex.search(full_text.upper()):
             continue
 
         key = keyword.split()[0]
