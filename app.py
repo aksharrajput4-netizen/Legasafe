@@ -1,3 +1,4 @@
+import html
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
@@ -104,6 +105,10 @@ uploaded_file = st.file_uploader(
 )
 
 if uploaded_file:
+    if uploaded_file.size > 10 * 1024 * 1024:
+        st.error("File size must be less than 10MB.")
+        st.stop()
+
     with st.spinner("Scanning your statement..."):
         data = process_pdf(uploaded_file)
 
@@ -152,9 +157,10 @@ if uploaded_file:
             if sub.get("cancellation_url"):
                 cancel_link = f' &nbsp;|&nbsp; <a href="https://{sub["cancellation_url"]}" target="_blank" style="color:#d9534f; text-decoration:none;">Cancel Subscription</a>'
 
+            safe_sub_name = html.escape(sub["name"])
             st.markdown(
                 f'<div class="sub-card">'
-                f'<b>{sub["name"]}</b>'
+                f'<b>{safe_sub_name}</b>'
                 f'<span style="color:{TEXT_MUTED}"> · {badge}</span>'
                 f' &nbsp;·&nbsp; ₹{sub["amount"]:,.0f}'
                 f' &nbsp;|&nbsp; <span class="sub-yearly">₹{yearly:,.0f}/yr</span>'
@@ -187,9 +193,10 @@ if uploaded_file:
             yearly_cost = monthly_cost * 12
             five_year_cost = yearly_cost * 5
 
+            safe_sub_name = html.escape(sub["name"])
             st.markdown(
                 f'<div class="sub-card" style="margin-bottom: 12px;">'
-                f'<div style="margin-bottom: 4px;"><b>{sub["name"]}</b></div>'
+                f'<div style="margin-bottom: 4px;"><b>{safe_sub_name}</b></div>'
                 f'<div style="display: flex; justify-content: space-between; color:{TEXT_MUTED}; font-size: 0.85rem;">'
                 f'<span>Monthly: <span style="color:{TEXT}">₹{monthly_cost:,.0f}</span></span>'
                 f'<span>Yearly: <span style="color:{AMBER}">₹{yearly_cost:,.0f}</span></span>'
@@ -291,13 +298,20 @@ if uploaded_file:
     st.subheader("⬇️ Export Your Data")
     ecol1, ecol2, ecol3 = st.columns(3)
 
+    def sanitize_csv_value(val):
+        if isinstance(val, str) and val.startswith(('=', '+', '-', '@', '\t', '\r')):
+            return "'" + val
+        return val
+
     if txns:
-        tx_csv = pd.DataFrame(txns).to_csv(index=False).encode('utf-8-sig')
+        safe_txns = [{k: sanitize_csv_value(v) for k, v in t.items()} for t in txns]
+        tx_csv = pd.DataFrame(safe_txns).to_csv(index=False).encode('utf-8-sig')
         ecol1.download_button("📄 All Transactions", tx_csv,
                               "legasafe_transactions.csv", "text/csv", use_container_width=True)
 
     if sub_rows:
-        subs_csv = pd.DataFrame(sub_rows).to_csv(index=False).encode('utf-8-sig')
+        safe_sub_rows = [{k: sanitize_csv_value(v) for k, v in r.items()} for r in sub_rows]
+        subs_csv = pd.DataFrame(safe_sub_rows).to_csv(index=False).encode('utf-8-sig')
         ecol2.download_button("📋 Subscriptions", subs_csv,
                               "legasafe_subscriptions.csv", "text/csv", use_container_width=True)
 

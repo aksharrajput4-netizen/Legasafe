@@ -114,223 +114,233 @@ COMPILED_SUBS_PATTERNS = {
     for keyword in SUBS_DB
 }
 
-def process_pdf(file, password=None):
+# ════════════════════════════════════════════════════════════
+#  FIX 1 — WORD BOUNDARY KEYWORDS
+#  LAB won't match MALABAR
+#  GAS won't match VEGAS
+#  RECHARGE now correctly detected
+# ════════════════════════════════════════════════════════════
 
-    # ════════════════════════════════════════════════════════════
-    #  FIX 1 — WORD BOUNDARY KEYWORDS
-    #  LAB won't match MALABAR
-    #  GAS won't match VEGAS
-    #  RECHARGE now correctly detected
-    # ════════════════════════════════════════════════════════════
+INDIAN_KEYWORDS = {
+    "Food & Dining": [
+        r"\bTIKI\b", r"\bTIKKI\b", r"\bCHAAT\b",
+        r"\bPANI PURI\b", r"\bPANIPURI\b",
+        r"\bSAMOSA\b", r"\bDHABA\b", r"\bBIRYANI\b",
+        r"\bHALWAI\b", r"\bMITHAI\b", r"\bSWEETS\b",
+        r"\bBAKERY\b", r"\bCAFE\b", r"\bCANTEEN\b",
+        r"\bRESTAURANT\b", r"\bJUICE\b", r"\bLASSI\b",
+        r"\bCHAI\b", r"\bSNACKS\b", r"\bTIFFIN\b",
+        r"\bPIZZA\b", r"\bBURGER\b", r"\bNOODLES\b",
+        r"\bKIRANA\b", r"\bGROCERY\b", r"\bSABZI\b",
+        r"\bFRUITS\b", r"\bZOMATO\b", r"\bSWIGGY\b",
+        r"\bBLINKIT\b", r"\bZEPTO\b", r"\bBIGBASKET\b",
+        r"\bMCDONALDS\b", r"\bSTARBUCKS\b", r"\bKFC\b",
+        r"\bDOMINOS\b", r"\bSUBWAY\b", r"\bTAPRI\b",
+        r"\bFOOD\b", r"\bMEALS\b", r"\bHOTEL\b",
+    ],
+    "Transport": [
+        r"\bUBER\b", r"\bOLA\b", r"\bRAPIDA\b",
+        r"\bAUTO\b", r"\bCAB\b", r"\bTAXI\b",
+        r"\bPETROL\b", r"\bDIESEL\b", r"\bFUEL\b",
+        r"\bBPCL\b", r"\bIOCL\b", r"\bINDIAN OIL\b",
+        r"\bCNG\b", r"\bIRCTC\b", r"\bRAILWAY\b",
+        r"\bTRAIN\b", r"\bMETRO\b", r"\bFASTAG\b",
+        r"\bTOLL\b", r"\bPARKING\b", r"\bREDBUS\b",
+        r"\bIXIGO\b", r"\bTRAVELS\b",
+        r"\bMETRO CARD\b",
+    ],
+    "Shopping": [
+        r"\bAMAZON\b", r"\bFLIPKART\b", r"\bMYNTRA\b",
+        r"\bAJIO\b", r"\bMEESHO\b", r"\bNYKAA\b",
+        r"\bMALL\b", r"\bGARMENTS\b", r"\bFASHION\b",
+        r"\bFOOTWEAR\b", r"\bSHOES\b", r"\bLAPTOP\b",
+        r"\bGIFT\b", r"\bSTATIONERY\b",
+    ],
+    "Health & Medical": [
+        r"\bPHARMACY\b", r"\bMEDICAL\b", r"\bMEDICALS\b",
+        r"\bMEDICINE\b", r"\bHOSPITAL\b", r"\bCLINIC\b",
+        r"\bDOCTOR\b", r"\bAPOLLO\b", r"\bMEDPLUS\b",
+        r"\bNETMEDS\b", r"\bPHARMEASY\b", r"\b1MG\b",
+        r"\bCHEMIST\b", r"\bDIAGNOSTIC\b",
+        r"\bPATHOLOGY\b", r"\bDENTAL\b",
+        r"\bHEALTHCARE\b", r"\bPATHLABS\b",
+        r"\bDR LAL\b", r"\bMAX HEALTHCARE\b",
+        r"\bLABORATORY\b",
+    ],
+    "Education": [
+        r"\bBYJU\b", r"\bUNACADEMY\b", r"\bVEDANTU\b",
+        r"\bSCHOOL\b", r"\bCOLLEGE\b", r"\bFEES\b",
+        r"\bTUITION\b", r"\bCOACHING\b", r"\bCLASSES\b",
+        r"\bACADEMY\b", r"\bINSTITUTE\b", r"\bCOURSE\b",
+        r"\bLIBRARY\b", r"\bEXAM\b",
+    ],
+    "EMI & Loans": [
+        r"\bEMI\b", r"\bLOAN\b", r"\bFINANCE\b",
+        r"\bLENDING\b", r"\bCREDIT\b", r"\bBAJAJ\b",
+        r"\bREPAYMENT\b", r"\bINSTALMENT\b",
+    ],
+    "Bills & Utilities": [
+        r"\bELECTRICITY\b", r"\bBIJLI\b", r"\bPOWER\b",
+        r"\bWATER\b", r"\bLPG\b", r"\bINDANE\b",
+        r"\bWIFI\b", r"\bBROADBAND\b", r"\bFIBER\b",
+        r"\bAIRTEL\b", r"\bBSNL\b", r"\bJIO\b",
+        r"\bVODAFONE\b", r"\bDTH\b",
+        r"\bRECHARGE\b",   # Fixed — now word boundary
+        r"\bPOSTPAID\b", r"\bMAINTENANCE\b",
+        r"\bRENT\b", r"\bSOCIETY\b",
+        r"\bGAS AGENCY\b", r"\bPIPED GAS\b",
+    ],
+    "Investments": [
+        r"\bMUTUAL FUND\b", r"\bSIP\b", r"\bZERODHA\b",
+        r"\bGROWW\b", r"\bUPSTOX\b", r"\bANGEL\b",
+        r"\bSHARES\b", r"\bSTOCK\b", r"\bGOLD\b",
+        r"\bINSURANCE\b", r"\bPPF\b", r"\bNPS\b",
+    ],
+    "Gaming & Entertainment": [
+        r"\bNETFLIX\b", r"\bHOTSTAR\b", r"\bSPOTIFY\b",
+        r"\bYOUTUBE\b", r"\bBOOKMYSHOW\b", r"\bPVR\b",
+        r"\bINOX\b", r"\bCINEMA\b", r"\bMOVIE\b",
+        r"\bPLAYSTATION\b", r"\bXBOX\b", r"\bSTEAM\b",
+        r"\bEPIC GAMES\b", r"\bGAMING\b",
+        r"\bGOOGLE PLAY\b",
+    ],
+    "Travel & Hotels": [
+        r"\bOYO\b", r"\bAIRBNB\b", r"\bFLIGHT\b",
+        r"\bINDIGO\b", r"\bAIRINDIA\b", r"\bSPICEJET\b",
+        r"\bHOLIDAY\b", r"\bTOUR\b",
+        r"\bGOIBIBO\b", r"\bMAKEMYTRIP\b",
+        r"\bHOTEL ADVANCE\b", r"\bTREEBO\b",
+    ],
+    "Personal Care": [
+        r"\bSALON\b", r"\bSALOON\b", r"\bBARBER\b",
+        r"\bPARLOUR\b", r"\bSPA\b", r"\bMASSAGE\b",
+        r"\bGROOMING\b", r"\bMEHENDI\b", r"\bNAILS\b",
+    ],
+}
 
-    INDIAN_KEYWORDS = {
-        "Food & Dining": [
-            r"\bTIKI\b", r"\bTIKKI\b", r"\bCHAAT\b",
-            r"\bPANI PURI\b", r"\bPANIPURI\b",
-            r"\bSAMOSA\b", r"\bDHABA\b", r"\bBIRYANI\b",
-            r"\bHALWAI\b", r"\bMITHAI\b", r"\bSWEETS\b",
-            r"\bBAKERY\b", r"\bCAFE\b", r"\bCANTEEN\b",
-            r"\bRESTAURANT\b", r"\bJUICE\b", r"\bLASSI\b",
-            r"\bCHAI\b", r"\bSNACKS\b", r"\bTIFFIN\b",
-            r"\bPIZZA\b", r"\bBURGER\b", r"\bNOODLES\b",
-            r"\bKIRANA\b", r"\bGROCERY\b", r"\bSABZI\b",
-            r"\bFRUITS\b", r"\bZOMATO\b", r"\bSWIGGY\b",
-            r"\bBLINKIT\b", r"\bZEPTO\b", r"\bBIGBASKET\b",
-            r"\bMCDONALDS\b", r"\bSTARBUCKS\b", r"\bKFC\b",
-            r"\bDOMINOS\b", r"\bSUBWAY\b", r"\bTAPRI\b",
-            r"\bFOOD\b", r"\bMEALS\b", r"\bHOTEL\b",
-        ],
-        "Transport": [
-            r"\bUBER\b", r"\bOLA\b", r"\bRAPIDA\b",
-            r"\bAUTO\b", r"\bCAB\b", r"\bTAXI\b",
-            r"\bPETROL\b", r"\bDIESEL\b", r"\bFUEL\b",
-            r"\bBPCL\b", r"\bIOCL\b", r"\bINDIAN OIL\b",
-            r"\bCNG\b", r"\bIRCTC\b", r"\bRAILWAY\b",
-            r"\bTRAIN\b", r"\bMETRO\b", r"\bFASTAG\b",
-            r"\bTOLL\b", r"\bPARKING\b", r"\bREDBUS\b",
-            r"\bIXIGO\b", r"\bTRAVELS\b",
-            r"\bMETRO CARD\b",
-        ],
-        "Shopping": [
-            r"\bAMAZON\b", r"\bFLIPKART\b", r"\bMYNTRA\b",
-            r"\bAJIO\b", r"\bMEESHO\b", r"\bNYKAA\b",
-            r"\bMALL\b", r"\bGARMENTS\b", r"\bFASHION\b",
-            r"\bFOOTWEAR\b", r"\bSHOES\b", r"\bLAPTOP\b",
-            r"\bGIFT\b", r"\bSTATIONERY\b",
-        ],
-        "Health & Medical": [
-            r"\bPHARMACY\b", r"\bMEDICAL\b", r"\bMEDICALS\b",
-            r"\bMEDICINE\b", r"\bHOSPITAL\b", r"\bCLINIC\b",
-            r"\bDOCTOR\b", r"\bAPOLLO\b", r"\bMEDPLUS\b",
-            r"\bNETMEDS\b", r"\bPHARMEASY\b", r"\b1MG\b",
-            r"\bCHEMIST\b", r"\bDIAGNOSTIC\b",
-            r"\bPATHOLOGY\b", r"\bDENTAL\b",
-            r"\bHEALTHCARE\b", r"\bPATHLABS\b",
-            r"\bDR LAL\b", r"\bMAX HEALTHCARE\b",
-            r"\bLABORATORY\b",
-        ],
-        "Education": [
-            r"\bBYJU\b", r"\bUNACADEMY\b", r"\bVEDANTU\b",
-            r"\bSCHOOL\b", r"\bCOLLEGE\b", r"\bFEES\b",
-            r"\bTUITION\b", r"\bCOACHING\b", r"\bCLASSES\b",
-            r"\bACADEMY\b", r"\bINSTITUTE\b", r"\bCOURSE\b",
-            r"\bLIBRARY\b", r"\bEXAM\b",
-        ],
-        "EMI & Loans": [
-            r"\bEMI\b", r"\bLOAN\b", r"\bFINANCE\b",
-            r"\bLENDING\b", r"\bCREDIT\b", r"\bBAJAJ\b",
-            r"\bREPAYMENT\b", r"\bINSTALMENT\b",
-        ],
-        "Bills & Utilities": [
-            r"\bELECTRICITY\b", r"\bBIJLI\b", r"\bPOWER\b",
-            r"\bWATER\b", r"\bLPG\b", r"\bINDANE\b",
-            r"\bWIFI\b", r"\bBROADBAND\b", r"\bFIBER\b",
-            r"\bAIRTEL\b", r"\bBSNL\b", r"\bJIO\b",
-            r"\bVODAFONE\b", r"\bDTH\b",
-            r"\bRECHARGE\b",   # Fixed — now word boundary
-            r"\bPOSTPAID\b", r"\bMAINTENANCE\b",
-            r"\bRENT\b", r"\bSOCIETY\b",
-            r"\bGAS AGENCY\b", r"\bPIPED GAS\b",
-        ],
-        "Investments": [
-            r"\bMUTUAL FUND\b", r"\bSIP\b", r"\bZERODHA\b",
-            r"\bGROWW\b", r"\bUPSTOX\b", r"\bANGEL\b",
-            r"\bSHARES\b", r"\bSTOCK\b", r"\bGOLD\b",
-            r"\bINSURANCE\b", r"\bPPF\b", r"\bNPS\b",
-        ],
-        "Gaming & Entertainment": [
-            r"\bNETFLIX\b", r"\bHOTSTAR\b", r"\bSPOTIFY\b",
-            r"\bYOUTUBE\b", r"\bBOOKMYSHOW\b", r"\bPVR\b",
-            r"\bINOX\b", r"\bCINEMA\b", r"\bMOVIE\b",
-            r"\bPLAYSTATION\b", r"\bXBOX\b", r"\bSTEAM\b",
-            r"\bEPIC GAMES\b", r"\bGAMING\b",
-            r"\bGOOGLE PLAY\b",
-        ],
-        "Travel & Hotels": [
-            r"\bOYO\b", r"\bAIRBNB\b", r"\bFLIGHT\b",
-            r"\bINDIGO\b", r"\bAIRINDIA\b", r"\bSPICEJET\b",
-            r"\bHOLIDAY\b", r"\bTOUR\b",
-            r"\bGOIBIBO\b", r"\bMAKEMYTRIP\b",
-            r"\bHOTEL ADVANCE\b", r"\bTREEBO\b",
-        ],
-        "Personal Care": [
-            r"\bSALON\b", r"\bSALOON\b", r"\bBARBER\b",
-            r"\bPARLOUR\b", r"\bSPA\b", r"\bMASSAGE\b",
-            r"\bGROOMING\b", r"\bMEHENDI\b", r"\bNAILS\b",
-        ],
-    }
+UNNECESSARY = [
+    "Food & Dining", "Shopping",
+    "Gaming & Entertainment", "Travel & Hotels",
+    "Personal Care",
+]
+NECESSARY = [
+    "Health & Medical", "Education",
+    "EMI & Loans", "Bills & Utilities", "Investments",
+]
 
-    UNNECESSARY = [
-        "Food & Dining", "Shopping",
-        "Gaming & Entertainment", "Travel & Hotels",
-        "Personal Care",
-    ]
-    NECESSARY = [
-        "Health & Medical", "Education",
-        "EMI & Loans", "Bills & Utilities", "Investments",
-    ]
+COMPILED_INDIAN_KEYWORDS = {
+    category: [(pattern, pattern.replace(r"\b", "").strip(), re.compile(pattern)) for pattern in patterns]
+    for category, patterns in INDIAN_KEYWORDS.items()
+}
 
-    # ════════════════════════════════════════════════════════════
-    #  HELPER FUNCTIONS
-    # ════════════════════════════════════════════════════════════
+CLEAN_AMOUNT_PATTERN = re.compile(r"[₹,\s]")
+MONTH_PATTERN_1 = re.compile(
+    r"\b(\d{1,2})\s+"
+    r"(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)"
+    r"\s+(\d{4})\b",
+    re.IGNORECASE
+)
+MONTH_PATTERN_2 = re.compile(r"\b(\d{2})[/-](\d{2})[/-](\d{4})\b")
+MONTH_PATTERN_3 = re.compile(r"\b(\d{4})[/-](\d{2})[/-](\d{2})\b")
 
-    def clean_amount(val):
-        if not val:
-            return None
-        cleaned = re.sub(r"[₹,\s]", "", str(val)).strip()
-        try:
-            f = float(cleaned)
-            return f if f > 0 else None
-        except:
-            return None
+COMPILED_WORD_PATTERNS = {
+    w: re.compile(r"\b" + re.escape(w) + r"\b")
+    for keyword in SUBS_DB
+    for w in keyword.upper().split()
+}
 
-    def is_annual_desc(description):
-        return any(kw in description.upper()
-                   for kw in ANNUAL_KEYWORDS)
+# ════════════════════════════════════════════════════════════
+#  HELPER FUNCTIONS
+# ════════════════════════════════════════════════════════════
 
-    def extract_month(text):
-        if not text:
-            return None
-        m = re.search(
-            r"\b(\d{1,2})\s+"
-            r"(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)"
-            r"\s+(\d{4})\b",
-            text, re.IGNORECASE
-        )
-        if m:
-            return m.group(2).capitalize()
-        m = re.search(
-            r"\b(\d{2})[/-](\d{2})[/-](\d{4})\b", text
-        )
-        if m:
-            return MONTH_MAP.get(m.group(2))
-        m = re.search(
-            r"\b(\d{4})[/-](\d{2})[/-](\d{2})\b", text
-        )
-        if m:
-            return MONTH_MAP.get(m.group(2))
+def clean_amount(val):
+    if not val:
+        return None
+    cleaned = CLEAN_AMOUNT_PATTERN.sub("", str(val)).strip()
+    try:
+        f = float(cleaned)
+        return f if f > 0 else None
+    except:
         return None
 
-    def smart_categorise(description):
-        """Word boundary matching — no false positives."""
-        desc_upper = description.upper()
-        scores     = defaultdict(int)
-        for category, patterns in INDIAN_KEYWORDS.items():
-            for pattern in patterns:
-                word = pattern.replace(r"\b", "").strip()
-                if re.search(pattern, desc_upper):
-                    scores[category] += len(word.split())
-        if not scores:
-            return "Other", 0
-        best = max(scores, key=scores.get)
-        return best, min(scores[best] * 25, 100)
+def is_annual_desc(description):
+    return any(kw in description.upper()
+               for kw in ANNUAL_KEYWORDS)
 
-    def is_header_row(cells):
-        joined = " ".join(
-            str(c).upper().strip() if c else ""
-            for c in cells
-        )
-        signals = [
-            "DESCRIPTION", "NARRATION", "DEBIT",
-            "CREDIT", "BALANCE", "TXN DATE",
-            "PARTICULARS", "WITHDRAWAL",
-        ]
-        return (any(h in joined for h in signals)
-                and len(joined) < 300)
+def extract_month(text):
+    if not text:
+        return None
+    m = MONTH_PATTERN_1.search(text)
+    if m:
+        return m.group(2).capitalize()
+    m = MONTH_PATTERN_2.search(text)
+    if m:
+        return MONTH_MAP.get(m.group(2))
+    m = MONTH_PATTERN_3.search(text)
+    if m:
+        return MONTH_MAP.get(m.group(2))
+    return None
 
-    # ════════════════════════════════════════════════════════════
-    #  FIX 2 — DYNAMIC COLUMN DETECTION
-    #  Reads header to find correct debit column
-    #  Won't confuse CREDIT or BALANCE with DEBIT
-    # ════════════════════════════════════════════════════════════
+def smart_categorise(description):
+    """Word boundary matching — no false positives."""
+    desc_upper = description.upper()
+    scores     = defaultdict(int)
+    for category, patterns_data in COMPILED_INDIAN_KEYWORDS.items():
+        for orig_pattern, word, compiled_pattern in patterns_data:
+            if compiled_pattern.search(desc_upper):
+                scores[category] += len(word.split())
+    if not scores:
+        return "Other", 0
+    best = max(scores, key=scores.get)
+    return best, min(scores[best] * 25, 100)
 
-    DEBIT_HEADERS = [
-        "DEBIT", "DR", "WITHDRAWAL", "WITHDRAWL",
-        "AMOUNT(DR)", "DEBIT(INR)", "DR AMOUNT",
-        "WITHDRAWALS", "DEBIT AMOUNT",
+def is_header_row(cells):
+    joined = " ".join(
+        str(c).upper().strip() if c else ""
+        for c in cells
+    )
+    signals = [
+        "DESCRIPTION", "NARRATION", "DEBIT",
+        "CREDIT", "BALANCE", "TXN DATE",
+        "PARTICULARS", "WITHDRAWAL",
     ]
-    DESC_HEADERS = [
-        "DESCRIPTION", "NARRATION", "PARTICULARS",
-        "DETAILS", "TRANSACTION DETAILS", "REMARKS",
-    ]
+    return (any(h in joined for h in signals)
+            and len(joined) < 300)
 
-    def detect_columns(header_row):
-        desc_idx  = None
-        debit_idx = None
-        cells_up  = [
-            str(c).upper().strip() if c else ""
-            for c in header_row
-        ]
-        for i, cell in enumerate(cells_up):
-            if any(kw in cell for kw in DESC_HEADERS):
-                if desc_idx is None:
-                    desc_idx = i
-            # Strict match — DEBIT only, not CREDIT/BALANCE
-            if any(kw == cell or kw in cell
-                   for kw in DEBIT_HEADERS):
-                if debit_idx is None:
-                    debit_idx = i
-        return desc_idx, debit_idx
+# ════════════════════════════════════════════════════════════
+#  FIX 2 — DYNAMIC COLUMN DETECTION
+#  Reads header to find correct debit column
+#  Won't confuse CREDIT or BALANCE with DEBIT
+# ════════════════════════════════════════════════════════════
+
+DEBIT_HEADERS = [
+    "DEBIT", "DR", "WITHDRAWAL", "WITHDRAWL",
+    "AMOUNT(DR)", "DEBIT(INR)", "DR AMOUNT",
+    "WITHDRAWALS", "DEBIT AMOUNT",
+]
+DESC_HEADERS = [
+    "DESCRIPTION", "NARRATION", "PARTICULARS",
+    "DETAILS", "TRANSACTION DETAILS", "REMARKS",
+]
+
+def detect_columns(header_row):
+    desc_idx  = None
+    debit_idx = None
+    cells_up  = [
+        str(c).upper().strip() if c else ""
+        for c in header_row
+    ]
+    for i, cell in enumerate(cells_up):
+        if any(kw in cell for kw in DESC_HEADERS):
+            if desc_idx is None:
+                desc_idx = i
+        # Strict match — DEBIT only, not CREDIT/BALANCE
+        if any(kw == cell or kw in cell
+               for kw in DEBIT_HEADERS):
+            if debit_idx is None:
+                debit_idx = i
+    return desc_idx, debit_idx
+def process_pdf(file, password=None):
 
     # ════════════════════════════════════════════════════════════
     #  PDF READER ENGINE
@@ -521,8 +531,7 @@ def process_pdf(file, password=None):
         count = sum(
             1 for txn in transactions
             if any(
-                re.search(r"\b" + w + r"\b",
-                          txn["description"].upper())
+                COMPILED_WORD_PATTERNS.get(w) and COMPILED_WORD_PATTERNS.get(w).search(txn["description"].upper())
                 for w in name_words
             )
         )
@@ -545,6 +554,7 @@ def process_pdf(file, password=None):
 
     for txn in transactions:
         cat, conf = smart_categorise(txn["description"])
+        txn["category"] = cat
         if cat == "Other":
             uncategorised.append(txn)
         else:
@@ -563,7 +573,7 @@ def process_pdf(file, password=None):
             continue
         if m not in seen_months:
             seen_months.append(m)
-        cat, _ = smart_categorise(txn["description"])
+        cat = txn.get("category", "Other")
         if cat != "Other":
             monthly_summary[m][cat] += txn["debit"]
 
@@ -630,11 +640,11 @@ def process_pdf(file, password=None):
     )
 
     # Category spending totals for charts
-    category_totals = {
-        cat: sum(t["debit"] for t in txns)
-        for cat, txns in categorised.items()
-        if sum(t["debit"] for t in txns) > 0
-    }
+    category_totals = {}
+    for cat, txns in categorised.items():
+        total = sum(t["debit"] for t in txns)
+        if total > 0:
+            category_totals[cat] = total
 
     # ════════════════════════════════════════════════════════════
     #  RETURN — Complete data for frontend
