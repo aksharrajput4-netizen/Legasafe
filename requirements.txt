@@ -2,3 +2,7 @@ streamlit==1.58.0
 pdfplumber==0.11.9
 pandas==3.0.3
 plotly==6.7.0
+
+fastapi
+uvicorn
+python-multipart
