@@ -117,10 +117,11 @@ if uploaded_file:
     cats    = data.get('categories', {})
     monthly = data.get('monthly_totals', {})
     txns    = data.get('transactions', [])
+    SYMBOL  = data.get('currency_symbol', '₹')
 
     # ── 1. Top Metrics ────────────────────────────────────────────────────────
     col1, col2, col3, col4 = st.columns(4)
-    col1.metric("Total Spent",  f"₹{data['total_spent']:,.0f}")
+    col1.metric("Total Spent",  f"{SYMBOL}{data['total_spent']:,.0f}")
     col2.metric("Transactions", data['transaction_count'])
     col3.metric("Active Subs",  len(subs))
     score_cls = "score-good" if score >= 70 else ("score-mid" if score >= 40 else "score-bad")
@@ -133,16 +134,16 @@ if uploaded_file:
 
     # ── 2. Budget Tracker ─────────────────────────────────────────────────────
     st.subheader("🎯 Budget Tracker")
-    user_budget = st.number_input("Monthly budget target (₹):", min_value=0, value=50000, step=1000)
+    user_budget = st.number_input(f"Monthly budget target ({SYMBOL}):", min_value=0, value=50000, step=1000)
     spent = data['total_spent']
     if spent > user_budget:
         over = spent - user_budget
         pct  = int(over / user_budget * 100)
-        st.error(f"⚠️ Over budget by ₹{over:,.0f} ({pct}% over)")
+        st.error(f"⚠️ Over budget by {SYMBOL}{over:,.0f} ({pct}% over)")
     else:
         left = user_budget - spent
         pct  = int(left / user_budget * 100)
-        st.success(f"✅ Under budget — ₹{left:,.0f} remaining ({pct}% of budget left)")
+        st.success(f"✅ Under budget — {SYMBOL}{left:,.0f} remaining ({pct}% of budget left)")
 
     # ── 3. Subscription Radar ─────────────────────────────────────────────────
     sub_rows = []
@@ -162,22 +163,22 @@ if uploaded_file:
                 f'<div class="sub-card">'
                 f'<b>{safe_sub_name}</b>'
                 f'<span style="color:{TEXT_MUTED}"> · {badge}</span>'
-                f' &nbsp;·&nbsp; ₹{sub["amount"]:,.0f}'
-                f' &nbsp;|&nbsp; <span class="sub-yearly">₹{yearly:,.0f}/yr</span>'
+                f' &nbsp;·&nbsp; {SYMBOL}{sub["amount"]:,.0f}'
+                f' &nbsp;|&nbsp; <span class="sub-yearly">{SYMBOL}{yearly:,.0f}/yr</span>'
                 f'{cancel_link}'
                 f'</div>',
                 unsafe_allow_html=True
             )
             sub_rows.append({
                 "Service":        sub["name"],
-                "Amount (₹)":     sub["amount"],
+                f"Amount ({SYMBOL})":     sub["amount"],
                 "Frequency":      badge,
-                "Yearly Cost (₹)": yearly
+                f"Yearly Cost ({SYMBOL})": yearly
             })
-        total_yearly = sum(r["Yearly Cost (₹)"] for r in sub_rows)
+        total_yearly = sum(r[f"Yearly Cost ({SYMBOL})"] for r in sub_rows)
         st.markdown(
             f"<p style='color:{AMBER};font-weight:700;margin-top:10px;'>"
-            f"Total subscription burn: ₹{total_yearly:,.0f}/year</p>",
+            f"Total subscription burn: {SYMBOL}{total_yearly:,.0f}/year</p>",
             unsafe_allow_html=True
         )
 
@@ -198,9 +199,9 @@ if uploaded_file:
                 f'<div class="sub-card" style="margin-bottom: 12px;">'
                 f'<div style="margin-bottom: 4px;"><b>{safe_sub_name}</b></div>'
                 f'<div style="display: flex; justify-content: space-between; color:{TEXT_MUTED}; font-size: 0.85rem;">'
-                f'<span>Monthly: <span style="color:{TEXT}">₹{monthly_cost:,.0f}</span></span>'
-                f'<span>Yearly: <span style="color:{AMBER}">₹{yearly_cost:,.0f}</span></span>'
-                f'<span>5-Year: <span style="color:{RED}">₹{five_year_cost:,.0f}</span></span>'
+                f'<span>Monthly: <span style="color:{TEXT}">{SYMBOL}{monthly_cost:,.0f}</span></span>'
+                f'<span>Yearly: <span style="color:{AMBER}">{SYMBOL}{yearly_cost:,.0f}</span></span>'
+                f'<span>5-Year: <span style="color:{RED}">{SYMBOL}{five_year_cost:,.0f}</span></span>'
                 f'</div>'
                 f'</div>',
                 unsafe_allow_html=True
@@ -223,8 +224,8 @@ if uploaded_file:
             f'<div style="background:{SURFACE}; border:1px solid {BORDER}; border-radius:10px; padding:16px; margin-top:16px;">'
             f'<div style="color:{TEXT_MUTED}; font-size:0.9rem; margin-bottom:8px;">If you cancel all these today, you will save:</div>'
             f'<div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:16px;">'
-            f'<div><div style="color:{TEXT_MUTED}; font-size:0.8rem;">1 Year</div><div style="color:{AMBER}; font-size:1.4rem; font-weight:700;">₹{total_one_year:,.0f}</div></div>'
-            f'<div><div style="color:{TEXT_MUTED}; font-size:0.8rem; text-align:right;">5 Years</div><div style="color:{GREEN}; font-size:1.8rem; font-weight:800;">₹{total_five_year:,.0f}</div></div>'
+            f'<div><div style="color:{TEXT_MUTED}; font-size:0.8rem;">1 Year</div><div style="color:{AMBER}; font-size:1.4rem; font-weight:700;">{SYMBOL}{total_one_year:,.0f}</div></div>'
+            f'<div><div style="color:{TEXT_MUTED}; font-size:0.8rem; text-align:right;">5 Years</div><div style="color:{GREEN}; font-size:1.8rem; font-weight:800;">{SYMBOL}{total_five_year:,.0f}</div></div>'
             f'</div>'
             f'<hr style="border-color:{BORDER}; margin:12px 0;">'
             f'<div style="color:{TEXT_MUTED}; font-size:0.85rem;">That 5-year savings equals:</div>'
@@ -251,19 +252,19 @@ if uploaded_file:
             y=cat_df["Category"],
             orientation='h',
             marker=dict(color=colors, line=dict(width=0)),
-            text=[f"₹{v:,.0f}" for v in cat_df["Amount"]],
+            text=[f"{SYMBOL}{v:,.0f}" for v in cat_df["Amount"]],
             textposition='outside',
             textfont=dict(color=TEXT, size=12),
-            hovertemplate="<b>%{y}</b><br>₹%{x:,.0f}<extra></extra>",
+            hovertemplate=f"<b>%{{y}}</b><br>{SYMBOL}%{{x:,.0f}}<extra></extra>",
         ))
         fig_cat.update_layout(
             **CHART_LAYOUT,
             height=max(280, n * 42),
-            xaxis_title="Amount (₹)",
+            xaxis_title=f"Amount ({SYMBOL})",
             yaxis_title=None,
             showlegend=False,
         )
-        fig_cat.update_xaxes(tickprefix="₹", tickformat=",")
+        fig_cat.update_xaxes(tickprefix=SYMBOL, tickformat=",")
         st.plotly_chart(fig_cat, use_container_width=True)
 
     # ── 5. Monthly Trend ──────────────────────────────────────────────────────
@@ -280,17 +281,17 @@ if uploaded_file:
             marker=dict(color=GOLD_LIGHT, size=7, line=dict(color=BG, width=2)),
             fill='tozeroy',
             fillcolor="rgba(201,168,76,0.08)",
-            hovertemplate="<b>%{x}</b><br>₹%{y:,.0f}<extra></extra>",
+            hovertemplate=f"<b>%{{x}}</b><br>{SYMBOL}%{{y:,.0f}}<extra></extra>",
             name="Spending",
         ))
         fig_trend.update_layout(
             **CHART_LAYOUT,
             height=300,
-            yaxis_title="Amount (₹)",
+            yaxis_title=f"Amount ({SYMBOL})",
             xaxis_title=None,
             showlegend=False,
         )
-        fig_trend.update_yaxes(tickprefix="₹", tickformat=",")
+        fig_trend.update_yaxes(tickprefix=SYMBOL, tickformat=",")
         st.plotly_chart(fig_trend, use_container_width=True)
 
     # ── 6. CSV Export ─────────────────────────────────────────────────────────
@@ -319,11 +320,11 @@ if uploaded_file:
         "Metric": ["Total Spent", "Transactions", "Active Subscriptions",
                    "Health Score", "Yearly Subscription Cost"],
         "Value": [
-            f"₹{data['total_spent']:,.0f}",
+            f"{SYMBOL}{data['total_spent']:,.0f}",
             data['transaction_count'],
             len(subs),
             f"{score}/100",
-            f"₹{sum(r['Yearly Cost (₹)'] for r in sub_rows) if sub_rows else 0:,.0f}"
+            f"{SYMBOL}{sum(r[f'Yearly Cost ({SYMBOL})'] for r in sub_rows) if sub_rows else 0:,.0f}"
         ]
     }).to_csv(index=False).encode('utf-8-sig')
     ecol3.download_button("📊 Summary Report", summary_csv,

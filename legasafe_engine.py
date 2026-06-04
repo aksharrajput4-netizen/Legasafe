@@ -647,6 +647,20 @@ def process_pdf(file, password=None):
             category_totals[cat] = total
 
     # ════════════════════════════════════════════════════════════
+    #  CURRENCY DETECTION
+    # ════════════════════════════════════════════════════════════
+    if "$" in full_text:
+        currency, currency_symbol = "USD", "$"
+    elif "£" in full_text:
+        currency, currency_symbol = "GBP", "£"
+    elif "€" in full_text:
+        currency, currency_symbol = "EUR", "€"
+    elif "₹" in full_text or "INR" in full_text:
+        currency, currency_symbol = "INR", "₹"
+    else:
+        currency, currency_symbol = "INR", "₹"
+
+    # ════════════════════════════════════════════════════════════
     #  RETURN — Complete data for frontend
     # ════════════════════════════════════════════════════════════
 
@@ -656,6 +670,10 @@ def process_pdf(file, password=None):
         "transaction_count":  len(transactions),
         "subscriptions_found": found_subs,
         "health_score":       health_score,
+
+        # Currency
+        "currency":           currency,
+        "currency_symbol":    currency_symbol,
 
         # Spending breakdown for charts
         "category_totals":    category_totals,
